@@ -53,6 +53,8 @@
       button { font-family: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
       input { font-family: inherit; }
       img { display: block; }
+      * { -webkit-tap-highlight-color: transparent; }
+      button, input, .track, .pl-card { touch-action: manipulation; }
       ::selection { background: rgba(225, 29, 46, 0.45); }
 
       /* ---------- ambient background ---------- */
@@ -141,6 +143,37 @@
       .search-clear { display: none; width: 32px; height: 32px; border-radius: 50%; background: var(--glass-2); place-items: center; flex: none; }
       .search-clear svg { width: 15px; height: 15px; color: var(--text-2); }
       .search-box.has-text .search-clear { display: grid; }
+      /* ---------- search wrap + live suggestions ---------- */
+      .search-wrap { position: relative; flex: 1 1 auto; min-width: 0; max-width: 560px; display: flex; }
+      .search-wrap .search-box { flex: 1 1 auto; max-width: none; width: 100%; }
+      #suggest {
+        position: absolute; top: calc(100% + 9px); left: 0; right: 0; z-index: 55;
+        max-height: min(62vh, 460px); overflow-y: auto; overscroll-behavior: contain;
+        border-radius: 18px; padding: 8px;
+        background: color-mix(in srgb, var(--bg-2) 82%, transparent);
+        border: 1px solid var(--stroke);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 24px rgba(225, 29, 46, 0.08);
+        backdrop-filter: blur(26px) saturate(1.35); -webkit-backdrop-filter: blur(26px) saturate(1.35);
+        transform-origin: top center;
+        animation: sgIn 0.18s cubic-bezier(0.22, 1.2, 0.4, 1);
+      }
+      @keyframes sgIn { from { opacity: 0; transform: translateY(-5px) scale(0.99); } to { opacity: 1; transform: none; } }
+      .sg-head { font-size: 10.5px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3); padding: 8px 10px 6px; }
+      .sg-row {
+        display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 11px;
+        width: 100%; text-align: left; padding: 7px 9px; border-radius: 12px;
+        transition: background 0.12s, transform 0.12s var(--spring);
+      }
+      .sg-row:hover, .sg-row.hot { background: var(--glass-2); }
+      .sg-row:active { transform: scale(0.985); }
+      .sg-row img { width: 42px; height: 42px; border-radius: 9px; object-fit: cover; background: var(--grad-soft); }
+      .sg-row .sg-ic { width: 42px; height: 42px; border-radius: 9px; display: grid; place-items: center; background: var(--glass-2); color: var(--text-3); }
+      .sg-row .sg-ic svg { width: 18px; height: 18px; }
+      .sg-row b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sg-row span { display: block; font-size: 12.5px; color: var(--text-2); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+      .sg-row .sg-go { color: var(--text-3); font-size: 12px; font-weight: 800; padding-right: 4px; }
+      .sg-row.all { grid-template-columns: 42px minmax(0, 1fr); border-top: 1px solid var(--stroke-soft); border-radius: 0 0 12px 12px; margin-top: 4px; padding-top: 11px; }
+      .sg-row.all b { color: var(--red-hi); }
       .top-eq-chip {
         flex: none;
         display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px;
@@ -153,7 +186,7 @@
 
       /* ---------- views ---------- */
       #views { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 6px clamp(16px, 3.5vw, 36px) 34px; scrollbar-width: thin; scrollbar-color: rgba(225, 29, 46, 0.4) transparent; }
-      .view { display: none; animation: viewIn 0.32s cubic-bezier(0.22, 0.9, 0.3, 1); }
+      .view { display: none; animation: viewIn 0.26s cubic-bezier(0.22, 0.9, 0.3, 1); }
       .view.active { display: block; }
       @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
       @media (prefers-reduced-motion: reduce) { .view { animation: none; } * { transition-duration: 0.01ms !important; } }
@@ -186,7 +219,8 @@
       }
       .pl-card:hover { transform: translateY(-3px); background: var(--glass-2); border-color: rgba(225, 29, 46, 0.32); }
       .pl-card:active { transform: scale(0.97); }
-      .pl-card .art { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 1; background: var(--grad-soft); }
+      .pl-card .art { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 1; background: var(--grad-soft); box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45); transition: transform 0.32s var(--spring), box-shadow 0.32s; will-change: transform; }
+      .pl-card:hover .art { box-shadow: 0 20px 38px rgba(0, 0, 0, 0.55), 0 6px 22px rgba(225, 29, 46, 0.16); }
       .pl-card .art img { width: 100%; height: 100%; object-fit: cover; }
       .pl-card .art .play-fab {
         position: absolute; right: 9px; bottom: 9px; width: 40px; height: 40px; border-radius: 50%;
@@ -204,9 +238,10 @@
       .track {
         display: grid; grid-template-columns: 52px minmax(0, 1fr) auto auto; align-items: center; gap: 13px;
         padding: 9px 10px; border-radius: 14px; text-align: left; width: 100%;
-        transition: background 0.15s;
+        transition: background 0.15s, transform 0.12s var(--spring);
       }
       .track:hover { background: var(--glass); }
+      .track:active { transform: scale(0.99); }
       .track .t-art { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: var(--grad-soft); flex: none; }
       .track .t-meta { min-width: 0; }
       .track .t-title { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
@@ -241,6 +276,10 @@
       .empty button { margin-top: 14px; background: var(--grad); color: #fff; font-weight: 800; font-size: 13px; padding: 9px 18px; border-radius: 99px; }
       .skeleton { border-radius: 14px; background: linear-gradient(100deg, var(--glass) 40%, var(--glass-2) 50%, var(--glass) 60%); background-size: 200% 100%; animation: shimmer 1.3s infinite; }
       @keyframes shimmer { to { background-position: -200% 0; } }
+      /* depth-based entrance — transform + opacity only, fill backwards so hover/tilt transforms stay free afterwards */
+      @keyframes riseIn { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      .track, .pl-card { animation: riseIn 0.28s cubic-bezier(0.22, 0.9, 0.3, 1) backwards; animation-delay: calc(var(--i, 0) * 24ms); }
+      @media (prefers-reduced-motion: reduce) { .track, .pl-card { animation: none; } #suggest { animation: none; } }
       .load-more { display: block; margin: 22px auto 4px; padding: 11px 26px; border-radius: 99px; background: var(--glass); border: 1px solid var(--stroke); font-weight: 800; font-size: 13.5px; }
       .load-more:hover { background: var(--glass-2); border-color: rgba(225, 29, 46, 0.35); }
       .load-more:active { transform: scale(0.96); }
@@ -355,9 +394,16 @@
       .ctl-btn.on::after { content: ""; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--red-hi); }
       .ctl-btn .rep-one { position: absolute; top: 4px; right: 4px; font-size: 8.5px; font-weight: 900; background: var(--red); color: #fff; border-radius: 99px; padding: 0.5px 4px; }
       .play-btn {
+        position: relative;
         width: 50px; height: 50px; border-radius: 50%; background: var(--grad); color: #fff;
         display: grid; place-items: center; box-shadow: 0 10px 26px rgba(225, 29, 46, 0.5), 0 0 22px rgba(225, 29, 46, 0.3);
         transition: transform 0.18s var(--spring);
+      }
+      /* mini loading ring on the play button while the stream resolves — never a full-screen blocker */
+      .play-btn.loading::after {
+        content: ""; position: absolute; inset: -4px; border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.16); border-top-color: var(--red-hi);
+        animation: rot 0.65s linear infinite; pointer-events: none;
       }
       .play-btn:hover { transform: scale(1.05); }
       .play-btn:active { transform: scale(0.96); }
@@ -394,11 +440,13 @@
       /* ---------- now playing sheet ---------- */
       #nowplaying {
         position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column;
-        transform: translateY(103%); transition: transform 0.5s cubic-bezier(0.32, 0.9, 0.26, 1);
-        background: #0b0b0d; overflow: hidden;
+        transform: translateY(103%); transition: transform 0.38s cubic-bezier(0.32, 1.15, 0.3, 1);
+        background: #0b0b0d; overflow: hidden; will-change: transform;
       }
       #nowplaying.open { transform: none; }
       .np-bg { position: absolute; inset: -40px; background-size: cover; background-position: center; filter: blur(60px) saturate(1.35); opacity: 0.5; transform: scale(1.1); }
+      #nowplaying.open .np-bg { animation: bgDrift 22s ease-in-out infinite alternate; }
+      @keyframes bgDrift { from { transform: scale(1.1) translateY(0); } to { transform: scale(1.18) translateY(-12px); } }
       .np-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 5, 7, 0.5), rgba(5, 5, 7, 0.88) 70%); }
       .np-inner { position: relative; z-index: 1; flex: 1; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding: 10px clamp(18px, 4vw, 40px) 30px; color: #fff; }
       .np-grab { width: 46px; height: 5px; border-radius: 99px; background: rgba(255, 255, 255, 0.3); margin: 2px auto 12px; flex: none; cursor: grab; touch-action: none; }
@@ -409,7 +457,11 @@
       .np-apple svg { width: 100%; height: 100%; display: block; }
       .np-close { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); display: grid; place-items: center; color: #fff; }
       .np-close svg { width: 19px; height: 19px; }
-      .np-art { width: min(66vw, 330px); aspect-ratio: 1; border-radius: 26px; object-fit: cover; margin-top: clamp(16px, 4vh, 38px); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 44px rgba(225, 29, 46, 0.14); }
+      .np-art { width: min(66vw, 330px); aspect-ratio: 1; border-radius: 26px; object-fit: cover; margin-top: clamp(16px, 4vh, 38px); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 44px rgba(225, 29, 46, 0.14); will-change: transform; }
+      /* slow Ken Burns depth zoom while the sheet is open */
+      #nowplaying.open .np-art { animation: kenburns 16s ease-in-out infinite alternate; }
+      @keyframes kenburns { from { transform: scale(1) translateY(0); } to { transform: scale(1.06) translateY(-5px); } }
+      @media (prefers-reduced-motion: reduce) { #nowplaying.open .np-art, #nowplaying.open .np-bg { animation: none; } }
       .np-meta { width: 100%; max-width: 640px; display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: 26px; }
       .np-meta h2 { font-family: var(--font-disp); font-size: clamp(19px, 3.2vw, 26px); font-weight: 800; letter-spacing: 0.015em; margin: 0; line-height: 1.22; }
       .np-meta p { margin: 5px 0 0; color: rgba(255, 255, 255, 0.68); font-weight: 600; font-size: 15px; }
@@ -513,7 +565,7 @@
         <button class="nav-btn" data-nav="queue"></button>
         <div class="side-foot">
           <b>10-Band Equalizer</b>
-          <p>Real Web Audio processing — bass, clarity aur volume boost, live.</p>
+          <p>Studio-grade processing. Ten bands, live spectrum, up to 200% clean gain.</p>
           <button data-nav="eq">Open EQ</button>
         </div>
       </aside>
@@ -521,11 +573,14 @@
       <div class="main-wrap">
         <header id="topbar">
           <div class="top-brand"><span class="brand-mark" data-brandmark></span><span>Axl<em>music</em></span></div>
-          <form class="search-box" id="searchForm" role="search">
-            <span data-icon="search"></span>
-            <input id="searchInput" type="search" placeholder="Search songs, artists, albums…" autocomplete="off" enterkeyhint="search" />
-            <button type="button" class="search-clear" id="searchClear" aria-label="Clear search"><span data-icon="x"></span></button>
-          </form>
+          <div class="search-wrap">
+            <form class="search-box" id="searchForm" role="search">
+              <span data-icon="search"></span>
+              <input id="searchInput" type="search" placeholder="Search the world's music…" autocomplete="off" enterkeyhint="search" />
+              <button type="button" class="search-clear" id="searchClear" aria-label="Clear search"><span data-icon="x"></span></button>
+            </form>
+            <div id="suggest" hidden></div>
+          </div>
           <button class="top-eq-chip" id="eqChip" data-nav="eq"><span data-icon="sliders"></span><span class="lbl">Equalizer</span><span class="dot"></span></button>
         </header>
 
@@ -534,8 +589,8 @@
           <section class="view active" id="view-home">
             <div class="hero">
               <span class="hero-apple" data-icon="apple" aria-hidden="true"></span>
-              <h1 id="greeting">Good evening.<br /><span class="grad">Tumhari vibe, tumhare gaane.</span></h1>
-              <p>Search karo, play karo, aur 10-band EQ se sound ko bilkul apne hisaab se shape karo — phone, tablet ya PC, har screen pe.</p>
+              <h1 id="greeting">Good evening.<br /><span class="grad">Every song. One search.</span></h1>
+              <p>Bollywood, Punjabi, Lo-Fi, global hits — resolved in a blink, shaped by a 10-band studio EQ. Your move.</p>
               <div class="chip-row" id="quickChips"></div>
             </div>
             <div id="homeSections"></div>
@@ -561,14 +616,14 @@
 
           <!-- LIKED -->
           <section class="view" id="view-liked">
-            <div class="queue-head"><div><h1>Liked Songs</h1><p class="queue-sub" id="likedSub">Dil wale gaane, ek jagah.</p></div></div>
+            <div class="queue-head"><div><h1>Liked Songs</h1><p class="queue-sub" id="likedSub">Songs you have claimed.</p></div></div>
             <div id="likedList"></div>
           </section>
 
           <!-- QUEUE -->
           <section class="view" id="view-queue">
             <div class="queue-head">
-              <div><h1>Queue</h1><p class="queue-sub" id="queueSub">Kuch bhi queued nahi hai.</p></div>
+              <div><h1>Queue</h1><p class="queue-sub" id="queueSub">The queue is empty.</p></div>
               <button class="btn-ghost" id="clearQueue" style="display:none">Clear queue</button>
             </div>
             <div id="queueList"></div>
@@ -586,7 +641,7 @@
               </div>
               <div class="viz-wrap">
                 <canvas id="viz" width="900" height="92"></canvas>
-                <div class="viz-note"><span>LIVE SPECTRUM</span><span id="vizState">Play a song to see it move</span></div>
+                <div class="viz-note"><span>LIVE SPECTRUM</span><span id="vizState">Play a song to wake the spectrum</span></div>
               </div>
               <div class="preset-row" id="presetRow"></div>
               <div class="faders" id="faders"></div>
@@ -594,12 +649,12 @@
                 <div class="gain-card">
                   <label>Preamp <output id="preampOut">0 dB</output></label>
                   <input type="range" class="wide" id="preamp" min="-12" max="12" step="0.5" value="0" />
-                  <p>Overall level into the EQ. Agar sound phat raha ho toh preamp thoda kam kar do.</p>
+                  <p>Overall level into the EQ. If the sound distorts, lower it slightly.</p>
                 </div>
                 <div class="gain-card">
                   <label>Volume Boost <output id="boostOut">100%</output></label>
                   <input type="range" class="wide" id="boost" min="50" max="200" step="5" value="100" />
-                  <p>Axlmusic booster — dheeme gaano ko 200% tak loud karo, bina quality khoye.</p>
+                  <p>Push quiet tracks up to 200% — clean gain, no clipping.</p>
                 </div>
               </div>
               <button class="load-more" id="eqReset">Reset EQ to Flat</button>
@@ -613,7 +668,7 @@
     <div id="playerbar" aria-label="Player">
       <div class="pb-track">
         <img id="pbArt" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e11d2e'/%3E%3Cstop offset='.55' stop-color='%239c0d1a'/%3E%3Cstop offset='1' stop-color='%233d050a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='500' height='500' fill='url(%23g)'/%3E%3Cg fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' transform='translate(150,150) scale(8.4)'%3E%3Cpath d='M9 18.5V6.8c0-.5.34-.93.82-1.05l8-2A1.1 1.1 0 0 1 19.2 4.8v11.2'/%3E%3Ccircle cx='6.6' cy='18.5' r='2.6'/%3E%3Ccircle cx='16.8' cy='16' r='2.6'/%3E%3C/g%3E%3C/svg%3E" />
-        <div class="pb-meta" id="pbMeta"><b id="pbTitle">Axlmusic Web</b><span id="pbArtist">Koi gaana play karo</span></div>
+        <div class="pb-meta" id="pbMeta"><b id="pbTitle">Axlmusic Web</b><span id="pbArtist">Your move.</span></div>
         <button class="icon-btn" id="pbFav" aria-label="Like song"></button>
       </div>
       <div class="pb-center">
@@ -679,7 +734,7 @@
         </div>
         <div class="np-actions">
           <button id="npEq"><span data-icon="sliders"></span>Equalizer</button>
-          <button id="npAddQueue"><span data-icon="plus"></span>Play Again Later</button>
+          <button id="npAddQueue"><span data-icon="plus"></span>Add to Queue</button>
         </div>
         <div class="np-queue" id="npQueueWrap">
           <h3>Up Next</h3>
@@ -748,17 +803,43 @@
       }
 
       /* ============================== api ============================== */
-      const API = "https://saavn.sumit.co/api";
+      /* Two mirrors of the same JioSaavn API — if the primary stalls or fails,
+         the request falls through to the second so search/playback never dead-ends. */
+      const API_BASES = ["https://saavn.sumit.co/api", "https://saavn.dev/api"];
       async function api(path, timeoutMs) {
-        const ctl = new AbortController();
-        const to = setTimeout(() => ctl.abort(), timeoutMs || 14000);
-        try {
-          const res = await fetch(API + path, { signal: ctl.signal });
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          const json = await res.json();
-          if (json && json.success === false) throw new Error(json.message || "API error");
-          return json.data;
-        } finally { clearTimeout(to); }
+        let lastErr = null;
+        for (const base of API_BASES) {
+          const ctl = new AbortController();
+          const to = setTimeout(() => ctl.abort(), timeoutMs || 12000);
+          try {
+            const res = await fetch(base + path, { signal: ctl.signal });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            const json = await res.json();
+            if (json && json.success === false) throw new Error(json.message || "API error");
+            return json.data;
+          } catch (e) { lastErr = e; } finally { clearTimeout(to); }
+        }
+        throw lastErr || new Error("API unreachable");
+      }
+      /* Stream-URL cache: signed URLs expire after a few hours, so entries are
+         kept for 3h max — memory first, localStorage second. Repeat plays of a
+         track skip the resolve step entirely. */
+      const LS_STREAM = "axlmusic_stream_cache_v1";
+      const STREAM_TTL = 3 * 60 * 60 * 1000;
+      let streamStore = {};
+      try { streamStore = JSON.parse(localStorage.getItem(LS_STREAM) || "{}") || {}; } catch (e) { streamStore = {}; }
+      function getCachedStream(id) {
+        const c = streamStore[String(id)];
+        if (!c) return null;
+        if (Date.now() - c.ts > STREAM_TTL) { delete streamStore[String(id)]; return null; }
+        return c;
+      }
+      function setCachedStream(track) {
+        if (!track || !track.id || !track.src) return;
+        streamStore[String(track.id)] = { src: track.src, srcLow: track.srcLow, q: track.quality, ts: Date.now() };
+        const keys = Object.keys(streamStore);
+        if (keys.length > 60) keys.slice(0, keys.length - 60).forEach((k) => delete streamStore[k]);
+        try { localStorage.setItem(LS_STREAM, JSON.stringify(streamStore)); } catch (e) {}
       }
       const imgOf = (arr, big) => {
         if (!arr || !arr.length) return "";
@@ -770,6 +851,7 @@
         const best = s.downloadUrl[s.downloadUrl.length - 1];
         const low = s.downloadUrl[Math.min(2, s.downloadUrl.length - 1)];
         const artists = ((s.artists && s.artists.primary) || []).map((a) => entityDecode(a.name)).filter(Boolean);
+        const cached = getCachedStream(s.id);
         return {
           id: String(s.id),
           title: entityDecode(s.name),
@@ -778,7 +860,9 @@
           duration: Number(s.duration) || 0,
           img: imgOf(s.image, true),
           imgSm: imgOf(s.image, false),
-          src: best.url, srcLow: low.url, quality: best.quality
+          src: cached ? cached.src : best.url,
+          srcLow: cached ? cached.srcLow : low.url,
+          quality: cached ? cached.q : best.quality
         };
       }
       const normSongs = (list) => (list || []).map(normSong).filter(Boolean);
@@ -898,7 +982,7 @@
         $("#eqShell").classList.toggle("eq-disabled", !eqOn);
         $("#eqChip").classList.toggle("on", eqOn);
         applyEq();
-        toast(eqOn ? "Equalizer ON" : "Equalizer OFF — flat sound");
+        toast(eqOn ? "Equalizer ON" : "Equalizer OFF");
       });
       $("#eqReset").addEventListener("click", () => { setPreset("Flat"); $("#preamp").value = 0; setPreamp(0); toast("EQ reset — Flat"); });
       function setPreamp(db) {
@@ -916,33 +1000,85 @@
       $("#eqChip").classList.add("on");
       syncFaders();
 
-      /* visualizer */
+      /* visualizer — fluid, organic motion: per-bin values are smoothed with a
+         fast-attack / slow-release lerp so nothing moves robotically. The EQ
+         view draws softened bars; Now Playing draws a smooth filled wave. */
       const viz = $("#viz"), vizCtx = viz.getContext("2d");
       const npViz = $("#npViz"), npCtx = npViz.getContext("2d");
-      function drawBars(ctx, w, h, count) {
+      const smoothEq = new Float32Array(56);
+      const smoothNp = new Float32Array(48);
+      let freqData = null;
+      function sampleInto(arr, count, t) {
+        let live = false;
+        if (analyser && S.playing) {
+          if (!freqData || freqData.length !== analyser.frequencyBinCount) freqData = new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteFrequencyData(freqData);
+          live = true;
+        }
+        for (let i = 0; i < count; i++) {
+          const target = live
+            ? Math.pow(freqData[Math.floor((i / count) * freqData.length * 0.72)] / 255, 1.25)
+            : 0.05 + 0.028 * Math.sin(t / 760 + i * 0.55) + 0.014 * Math.sin(t / 340 + i * 1.3);
+          const k = target > arr[i] ? 0.45 : 0.14; /* fast attack, slow release */
+          arr[i] += (target - arr[i]) * k;
+        }
+      }
+      function drawBars(ctx, w, h, arr) {
+        const count = arr.length;
         ctx.clearRect(0, 0, w, h);
         const grad = ctx.createLinearGradient(0, h, 0, 0);
         grad.addColorStop(0, "#8a0e1a"); grad.addColorStop(0.55, "#e11d2e"); grad.addColorStop(1, "#ff5a3c");
         ctx.fillStyle = grad;
         const bw = w / count;
-        let data = null;
-        if (analyser && S.playing) { data = new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(data); }
         for (let i = 0; i < count; i++) {
-          const v = data ? data[Math.floor((i / count) * data.length * 0.72)] / 255 : 0.06 + 0.03 * Math.sin(Date.now() / 700 + i);
-          const bh = Math.max(3, v * (h - 6));
+          const bh = Math.max(3, arr[i] * (h - 6));
           const x = i * bw + bw * 0.22, y = h - bh;
           ctx.beginPath();
           if (ctx.roundRect) ctx.roundRect(x, y, bw * 0.56, bh, 3); else ctx.rect(x, y, bw * 0.56, bh);
           ctx.fill();
         }
       }
-      (function vizLoop() {
+      function drawWave(ctx, w, h, arr) {
+        const count = arr.length;
+        ctx.clearRect(0, 0, w, h);
+        const pts = [];
+        for (let i = 0; i < count; i++) {
+          pts.push({ x: (i / (count - 1)) * w, y: h - 4 - arr[i] * (h - 10) });
+        }
+        const grad = ctx.createLinearGradient(0, h, 0, 0);
+        grad.addColorStop(0, "rgba(138,14,26,0.05)"); grad.addColorStop(0.6, "rgba(225,29,46,0.34)"); grad.addColorStop(1, "rgba(255,90,60,0.55)");
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        ctx.lineTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < count - 1; i++) {
+          const mx = (pts[i].x + pts[i + 1].x) / 2, my = (pts[i].y + pts[i + 1].y) / 2;
+          ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+        }
+        ctx.lineTo(pts[count - 1].x, pts[count - 1].y);
+        ctx.lineTo(w, h);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+        /* crest line */
+        ctx.beginPath();
+        ctx.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < count - 1; i++) {
+          const mx = (pts[i].x + pts[i + 1].x) / 2, my = (pts[i].y + pts[i + 1].y) / 2;
+          ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+        }
+        ctx.lineTo(pts[count - 1].x, pts[count - 1].y);
+        ctx.strokeStyle = "rgba(255,120,110,0.9)";
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+      }
+      (function vizLoop(t) {
         requestAnimationFrame(vizLoop);
-        if (S.view === "eq" && $("#view-eq").classList.contains("active")) drawBars(vizCtx, viz.width, viz.height, 56);
-        if ($("#nowplaying").classList.contains("open")) drawBars(npCtx, npViz.width, npViz.height, 44);
+        const now = t || 0;
+        if (S.view === "eq" && $("#view-eq").classList.contains("active")) { sampleInto(smoothEq, smoothEq.length, now); drawBars(vizCtx, viz.width, viz.height, smoothEq); }
+        if ($("#nowplaying").classList.contains("open")) { sampleInto(smoothNp, smoothNp.length, now); drawWave(npCtx, npViz.width, npViz.height, smoothNp); }
         const vs = $("#vizState");
-        if (vs) vs.textContent = !current() ? "Play a song to see it move" : S.playing ? "Live — " + (eqOn ? activePreset + " preset" : "EQ off") : "Paused";
-      })();
+        if (vs) vs.textContent = !current() ? "Play a song to wake the spectrum" : S.playing ? "Live — " + (eqOn ? activePreset + " preset" : "EQ off") : "Paused";
+      })(0);
 
       /* ============================== rendering ============================== */
       function trackRow(track, opts) {
@@ -951,6 +1087,9 @@
         const isNow = current() && current().id === track.id;
         row.className = "track" + (isNow ? " now" : "");
         row.dataset.tid = track.id;
+        row.style.setProperty("--i", Math.min(opts.index || 0, 12));
+        /* hover-warm: pre-resolve this row's stream into the prefetch element so a click starts instantly */
+        row.addEventListener("pointerenter", () => warmStream(track), { passive: true });
         row.innerHTML =
           '<img class="t-art" loading="lazy" alt="" src="' + esc(track.imgSm || track.img) + '" />' +
           '<div class="t-meta"><div class="t-title">' + esc(track.title) + '<span class="eq-bars" aria-hidden="true"><i></i><i></i><i></i></span></div>' +
@@ -987,6 +1126,7 @@
         list.className = "track-list";
         tracks.forEach((t, i) => {
           list.appendChild(trackRow(t, {
+            index: i,
             removable: opts.removable,
             onRemove: opts.onRemove ? () => opts.onRemove(i) : null,
             onPlay: () => (opts.onPlay ? opts.onPlay(t, i) : playFromList(tracks, i))
@@ -994,14 +1134,32 @@
         });
         container.appendChild(list);
       }
-      function cardEl(item, type) {
+      function cardEl(item, type, idx) {
         const b = document.createElement("button");
         b.className = "pl-card";
+        b.style.setProperty("--i", Math.min(idx || 0, 12));
         b.innerHTML =
           '<span class="art"><img loading="lazy" alt="" src="' + esc(imgOf(item.image, true)) + '" /><span class="play-fab">' + ICONS.play + "</span></span>" +
           "<h3>" + esc(entityDecode(item.name)) + "</h3><p>" + (type === "playlist" ? (item.songCount ? item.songCount + " songs" : "Playlist") : esc(entityDecode(item.year || "Album"))) + "</p>";
         b.querySelector("img").addEventListener("error", function () { this.style.visibility = "hidden"; });
         b.addEventListener("click", () => openCollection(type, item.id, item));
+        /* iOS-style 3D tilt — pointer parallax on the artwork, transform only, rAF-throttled */
+        if (window.matchMedia && matchMedia("(hover: hover) and (pointer: fine)").matches) {
+          const art = b.querySelector(".art");
+          let raf = null;
+          b.addEventListener("pointermove", (e) => {
+            if (raf) return;
+            raf = requestAnimationFrame(() => {
+              raf = null;
+              const r = b.getBoundingClientRect();
+              if (!r.width) return;
+              const x = (e.clientX - r.left) / r.width - 0.5;
+              const y = (e.clientY - r.top) / r.height - 0.5;
+              art.style.transform = "perspective(620px) rotateX(" + (-y * 7).toFixed(2) + "deg) rotateY(" + (x * 9).toFixed(2) + "deg) scale(1.045)";
+            });
+          });
+          b.addEventListener("pointerleave", () => { if (raf) { cancelAnimationFrame(raf); raf = null; } art.style.transform = ""; });
+        }
         return b;
       }
       function markNowRows() {
@@ -1032,7 +1190,7 @@
       const GREET = [[0, "Good night"], [5, "Good morning"], [12, "Good afternoon"], [17, "Good evening"], [21, "Good night"]];
       const hr = new Date().getHours();
       const greet = GREET.filter(([h]) => hr >= h).pop()[1];
-      $("#greeting").innerHTML = greet + '.<br /><span class="grad">Tumhari vibe, tumhare gaane.</span>';
+      $("#greeting").innerHTML = greet + '.<br /><span class="grad">Every song. One search.</span>';
 
       /* ============================== home ============================== */
       const QUICK = ["Arijit Singh", "Punjabi Hits", "Lo-Fi", "Pritam", "Shreya Ghoshal", "Workout Mix", "A.R. Rahman", "Old Bollywood"];
@@ -1044,12 +1202,12 @@
         chipsEl.appendChild(c);
       });
       const HOME_SECTIONS = [
-        { title: "Trending Playlists", sub: "Sabse zyada suney jaane wale", kind: "playlists", q: "trending hits" },
-        { title: "Bollywood Chartbusters", sub: "Filmy superhits", kind: "playlists", q: "bollywood chartbusters" },
-        { title: "On Repeat — Songs", sub: "Direct play karo", kind: "songs", q: "top hindi songs" },
-        { title: "Punjabi Swag", sub: "Full volume zone", kind: "playlists", q: "punjabi hits" },
-        { title: "Chill & Lo-Fi", sub: "Late night ke liye", kind: "playlists", q: "lofi chill" },
-        { title: "Fresh Albums", sub: "Naye releases", kind: "albums", q: "new bollywood" }
+        { title: "Trending Playlists", sub: "The world is listening", kind: "playlists", q: "trending hits" },
+        { title: "Bollywood Chartbusters", sub: "Cinema's greatest hits", kind: "playlists", q: "bollywood chartbusters" },
+        { title: "On Repeat — Songs", sub: "One tap. Instant.", kind: "songs", q: "top hindi songs" },
+        { title: "Punjabi Swag", sub: "Turn it all the way up", kind: "playlists", q: "punjabi hits" },
+        { title: "Chill & Lo-Fi", sub: "After midnight", kind: "playlists", q: "lofi chill" },
+        { title: "Fresh Albums", sub: "Just dropped", kind: "albums", q: "new bollywood" }
       ];
       async function loadHome() {
         const wrap = $("#homeSections");
@@ -1073,11 +1231,11 @@
               const data = await api("/search/" + sec.kind + "?query=" + encodeURIComponent(sec.q) + "&page=0&limit=8");
               const grid = body.querySelector(".card-grid");
               grid.innerHTML = "";
-              (data.results || []).slice(0, 8).forEach((item) => grid.appendChild(cardEl(item, sec.kind === "playlists" ? "playlist" : "album")));
+              (data.results || []).slice(0, 8).forEach((item, ci) => grid.appendChild(cardEl(item, sec.kind === "playlists" ? "playlist" : "album", ci)));
               if (!data.results || !data.results.length) body.remove();
             }
           } catch (e) {
-            body.innerHTML = '<div class="section-head"><h2>' + sec.title + '</h2></div><div class="empty"><b>Load nahi ho paya</b><p>Internet connection check karke dobara try karo.</p><button data-retry="' + i + '">Retry</button></div>';
+            body.innerHTML = '<div class="section-head"><h2>' + sec.title + '</h2></div><div class="empty"><b>Could not load</b><p>Check your connection and try again.</p><button data-retry="' + i + '">Retry</button></div>';
             const rb = body.querySelector("[data-retry]");
             if (rb) rb.addEventListener("click", loadHome);
           }
@@ -1086,15 +1244,80 @@
 
       /* ============================== search ============================== */
       const searchInput = $("#searchInput");
+      const suggestEl = $("#suggest");
+      const TRENDING = ["Arijit Singh", "Tum Hi Ho", "Punjabi Hits", "A.R. Rahman", "Lo-Fi Bollywood", "Shreya Ghoshal", "Pritam", "Old Bollywood Classics"];
+      const suggestCache = new Map();
+      let sgTimer = null, sgSeq = 0;
+
+      function hideSuggest() { suggestEl.hidden = true; suggestEl.innerHTML = ""; }
+      function sgRow(inner, cls) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "sg-row" + (cls ? " " + cls : "");
+        b.innerHTML = inner;
+        return b;
+      }
+      function showTrending() {
+        suggestEl.innerHTML = "";
+        const head = document.createElement("div");
+        head.className = "sg-head"; head.textContent = "Trending now";
+        suggestEl.appendChild(head);
+        TRENDING.forEach((t) => {
+          const r = sgRow('<span class="sg-ic">' + ICONS.search + "</span><span style='min-width:0'><b>" + esc(t) + "</b></span>");
+          r.addEventListener("click", () => { searchInput.value = t; $("#searchForm").classList.add("has-text"); hideSuggest(); runSearch(t, true); });
+          suggestEl.appendChild(r);
+        });
+        suggestEl.hidden = false;
+      }
+      async function showSuggestions(q) {
+        const seq = ++sgSeq;
+        const key = q.toLowerCase();
+        let songs = suggestCache.get(key);
+        if (!songs) {
+          try {
+            const data = await api("/search/songs?query=" + encodeURIComponent(q) + "&page=0&limit=6", 9000);
+            songs = normSongs(data.results || []);
+            if (suggestCache.size > 40) suggestCache.clear();
+            suggestCache.set(key, songs);
+          } catch (e) { return; }
+        }
+        if (seq !== sgSeq || document.activeElement !== searchInput) return;
+        if (searchInput.value.trim().toLowerCase() !== key) return;
+        suggestEl.innerHTML = "";
+        const head = document.createElement("div");
+        head.className = "sg-head"; head.textContent = songs.length ? "Songs" : "No matches";
+        suggestEl.appendChild(head);
+        songs.forEach((s, i) => {
+          const r = sgRow('<img alt="" src="' + esc(s.imgSm || s.img) + '" /><span style="min-width:0"><b>' + esc(s.title) + "</b><span>" + esc(s.artist) + '</span></span><span class="sg-go">PLAY</span>');
+          r.querySelector("img").addEventListener("error", function () { this.style.visibility = "hidden"; });
+          r.addEventListener("click", () => { hideSuggest(); playFromList(songs, i); });
+          suggestEl.appendChild(r);
+        });
+        const all = sgRow('<span class="sg-ic">' + ICONS.search + "</span><span style='min-width:0'><b>See all results for “" + esc(q) + "”</b></span>", "all");
+        all.addEventListener("click", () => { hideSuggest(); runSearch(q, true); });
+        suggestEl.appendChild(all);
+        suggestEl.hidden = false;
+      }
+      searchInput.addEventListener("focus", () => {
+        const q = searchInput.value.trim();
+        if (q.length >= 2) showSuggestions(q);
+        else if (!q) showTrending();
+      });
+      searchInput.addEventListener("blur", () => setTimeout(hideSuggest, 160));
+      searchInput.addEventListener("keydown", (e) => { if (e.key === "Escape") hideSuggest(); });
+
       let debounce = null;
       searchInput.addEventListener("input", () => {
         $("#searchForm").classList.toggle("has-text", !!searchInput.value);
-        clearTimeout(debounce);
         const q = searchInput.value.trim();
-        if (q.length >= 2) debounce = setTimeout(() => runSearch(q, false), 420);
+        clearTimeout(debounce);
+        clearTimeout(sgTimer);
+        if (!q) { showTrending(); return; }
+        if (q.length < 2) { hideSuggest(); return; }
+        sgTimer = setTimeout(() => showSuggestions(q), 150);
+        debounce = setTimeout(() => runSearch(q, false), 250);
       });
-      $("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); const q = searchInput.value.trim(); if (q) runSearch(q, true); searchInput.blur(); });
-      $("#searchClear").addEventListener("click", () => { searchInput.value = ""; $("#searchForm").classList.remove("has-text"); searchInput.focus(); });
+      $("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); const q = searchInput.value.trim(); hideSuggest(); if (q) runSearch(q, true); searchInput.blur(); });
+      $("#searchClear").addEventListener("click", () => { searchInput.value = ""; $("#searchForm").classList.remove("has-text"); hideSuggest(); searchInput.focus(); showTrending(); });
 
       $$("#searchTabs .tab").forEach((t) => t.addEventListener("click", () => {
         $$("#searchTabs .tab").forEach((x) => x.classList.toggle("active", x === t));
@@ -1103,8 +1326,37 @@
       }));
       $("#loadMore").addEventListener("click", () => loadSearchPage(S.searchPage + 1, true));
 
+      /* Smart matching: one query becomes several attempts — cleaned text,
+         "Song - Artist" split both ways, and a shortened form — so typos,
+         partial names and Hindi/English/Punjabi mixes still resolve. */
+      function queryVariants(q) {
+        const out = [];
+        const push = (s) => { s = (s || "").trim().replace(/\s+/g, " "); if (s && out.indexOf(s) === -1) out.push(s); };
+        push(q);
+        push(q.replace(/[^\p{L}\p{N}\s\-]/gu, ""));
+        if (q.indexOf("-") !== -1) {
+          const parts = q.split("-").map((s) => s.trim()).filter(Boolean);
+          parts.forEach(push);
+          if (parts.length > 1) push(parts.join(" "));
+        }
+        const words = q.split(/\s+/).filter(Boolean);
+        if (words.length > 2) push(words.slice(0, -1).join(" "));
+        if (words.length > 3) push(words.slice(0, 2).join(" "));
+        return out;
+      }
+      async function fetchSearchSmart(tab, q, page, limit) {
+        const variants = page === 0 ? queryVariants(q) : [S._effectiveQ || q];
+        let best = null;
+        for (const v of variants) {
+          const data = await api("/search/" + tab + "?query=" + encodeURIComponent(v) + "&page=" + page + "&limit=" + limit);
+          const n = (data.results || []).length;
+          if (!best || n > (best.results || []).length) { best = data; S._effectiveQ = v; }
+          if (n >= Math.min(4, limit) || page > 0) break;
+        }
+        return best;
+      }
       async function runSearch(q, fresh) {
-        S.searchQ = q; S.searchPage = 0;
+        S.searchQ = q; S.searchPage = 0; S._effectiveQ = q;
         showView("search");
         $("#searchTitle").textContent = "Results for “" + q + "”";
         $("#searchCount").textContent = "";
@@ -1119,7 +1371,7 @@
         $("#loadMore").style.display = "none";
         try {
           const limit = tab === "songs" ? 20 : 24;
-          const data = await api("/search/" + tab + "?query=" + encodeURIComponent(q) + "&page=" + page + "&limit=" + limit);
+          const data = await fetchSearchSmart(tab, q, page, limit);
           if (tab !== S.searchTab || q !== S.searchQ) return;
           S.searchPage = page;
           S.searchTotal = data.total || 0;
@@ -1142,25 +1394,25 @@
             } else {
               S._searchSongs = songs;
               renderTrackList(box, songs, {
-                emptyHtml: '<div class="empty"><b>Kuch nahi mila</b><p>Spelling check karo ya koi aur naam try karo — jaise artist ka naam ya gaane ka ek shabd.</p></div>',
+                emptyHtml: '<div class="empty"><b>Nothing found</b><p>No track by that name — yet. Try the artist, or one word from the title.</p></div>',
                 onPlay: (t, i) => playFromList(S._searchSongs, i)
               });
             }
           } else {
             if (!append) box.innerHTML = "";
-            if (!results.length && !append) { box.innerHTML = '<div class="empty"><b>Kuch nahi mila</b><p>Doosra naam try karo.</p></div>'; }
+            if (!results.length && !append) { box.innerHTML = '<div class="empty"><b>Nothing found</b><p>Try another name.</p></div>'; }
             const grid = document.createElement("div");
             grid.className = "card-grid";
-            results.forEach((item) => grid.appendChild(cardEl(item, tab === "playlists" ? "playlist" : "album")));
+            results.forEach((item, ci) => grid.appendChild(cardEl(item, tab === "playlists" ? "playlist" : "album", ci)));
             box.appendChild(grid);
           }
           const shown = (page + 1) * limit;
           $("#loadMore").style.display = results.length >= limit && shown < S.searchTotal ? "block" : "none";
         } catch (e) {
-          if (!append) box.innerHTML = '<div class="empty"><b>Search fail ho gaya</b><p>Network slow lag raha hai. Ek baar phir try karo.</p><button id="searchRetry">Retry</button></div>';
+          if (!append) box.innerHTML = '<div class="empty"><b>Search failed</b><p>The network is slow. Try once more.</p><button id="searchRetry">Retry</button></div>';
           const rb = $("#searchRetry");
           if (rb) rb.addEventListener("click", () => loadSearchPage(page, append));
-          else toast("Network error — dobara try karo");
+          else toast("Network error — try again");
         } finally { S.searchBusy = false; }
       }
 
@@ -1186,14 +1438,14 @@
             '<button class="btn-ghost" id="collQueue">' + ICONS.plus + "Add All to Queue</button></div></div></div>" +
             '<div id="collTracks"></div>';
           renderTrackList($("#collTracks"), songs, {
-            emptyHtml: '<div class="empty"><b>Isme koi playable song nahi mila</b><p>Doosri playlist try karo.</p></div>',
+            emptyHtml: '<div class="empty"><b>No playable tracks here</b><p>Try another collection.</p></div>',
             onPlay: (t, i) => playFromList(S.collSongs, i)
           });
           const cp = $("#collPlay"); if (cp) cp.addEventListener("click", () => songs.length && playFromList(songs, 0));
           const cs = $("#collShuffle"); if (cs) cs.addEventListener("click", () => { if (!songs.length) return; S.shuffle = true; syncTransport(); playFromList(songs, Math.floor(Math.random() * songs.length)); });
-          const cq = $("#collQueue"); if (cq) cq.addEventListener("click", () => { S.queue.push.apply(S.queue, songs); refreshQueueUI(); toast(songs.length + " songs queue me add ho gaye"); });
+          const cq = $("#collQueue"); if (cq) cq.addEventListener("click", () => { S.queue.push.apply(S.queue, songs); refreshQueueUI(); toast(songs.length + " songs added to the queue"); });
         } catch (e) {
-          body.innerHTML = '<div class="empty"><b>Playlist load nahi ho payi</b><p>Network check karke retry karo.</p><button id="collRetry">Retry</button></div>';
+          body.innerHTML = '<div class="empty"><b>Could not load this collection</b><p>Check your connection and retry.</p><button id="collRetry">Retry</button></div>';
           const rb = $("#collRetry"); if (rb) rb.addEventListener("click", () => openCollection(type, id, item));
         }
       }
@@ -1201,7 +1453,7 @@
 
       /* ============================== favorites / queue ============================== */
       function toggleFav(track) {
-        if (S.favs.has(track.id)) { S.favs.delete(track.id); toast("Liked se hataya — " + track.title); }
+        if (S.favs.has(track.id)) { S.favs.delete(track.id); toast("Removed from Liked — " + track.title); }
         else { S.favs.set(track.id, track); toast("Liked — " + track.title); }
         syncFavButtons(); markNowRows();
         if (S.view === "liked") renderLiked();
@@ -1214,14 +1466,14 @@
       }
       function renderLiked() {
         const favs = Array.from(S.favs.values());
-        $("#likedSub").textContent = favs.length ? favs.length + " gaane liked hain — isi session ke liye saved." : "Dil wale gaane, ek jagah.";
+        $("#likedSub").textContent = favs.length ? favs.length + " songs · saved for this session" : "Songs you have claimed.";
         renderTrackList($("#likedList"), favs, {
-          emptyHtml: '<div class="empty"><b>Abhi koi liked song nahi</b><p>Kisi bhi gaane pe dil wala button dabao — yahan aa jayega.</p></div>',
+          emptyHtml: '<div class="empty"><b>Nothing claimed yet</b><p>Tap the heart on any song — it will live here.</p></div>',
           onPlay: (t, i) => playFromList(favs, i)
         });
       }
       function playNext(track) {
-        if (S.idx < 0) { S.queue.unshift(track); refreshQueueUI(); toast("Queue me sabse pehle — " + track.title); return; }
+        if (S.idx < 0) { S.queue.unshift(track); refreshQueueUI(); toast("First in queue — " + track.title); return; }
         S.queue.splice(S.idx + 1, 0, track);
         refreshQueueUI(); toast("Up next — " + track.title);
       }
@@ -1229,37 +1481,58 @@
         const badge = $("#sideQueueBadge");
         if (badge) { badge.style.display = S.queue.length ? "inline-block" : "none"; badge.textContent = S.queue.length; }
         const cur = current();
-        $("#queueSub").textContent = !S.queue.length ? "Kuch bhi queued nahi hai." :
+        $("#queueSub").textContent = !S.queue.length ? "The queue is empty." :
           cur ? "Now playing: " + cur.title + " · " + S.queue.length + " songs total" : S.queue.length + " songs in queue";
         $("#clearQueue").style.display = S.queue.length ? "inline-flex" : "none";
         renderTrackList($("#queueList"), S.queue, {
           removable: true,
-          emptyHtml: '<div class="empty"><b>Queue khaali hai</b><p>Koi gaana search karke play karo — poori list yahan dikhegi. Gaano pe + dabakar queue me add bhi kar sakte ho.</p></div>',
+          emptyHtml: '<div class="empty"><b>The queue is empty</b><p>Search any song and press play — the full list appears here. Use + on any track to line it up.</p></div>',
           onRemove: (i) => {
             const removed = S.queue[i];
             S.queue.splice(i, 1);
             if (i < S.idx) S.idx--;
             else if (i === S.idx) { S.idx = -1; }
             refreshQueueUI(); syncFavButtons();
-            toast("Queue se hataya — " + (removed ? removed.title : ""));
+            toast("Removed from queue — " + (removed ? removed.title : ""));
           },
           onPlay: (t, i) => playAt(i)
         });
         const np = $("#npQueue");
         if (np) {
           const upcoming = S.queue.slice(S.idx + 1, S.idx + 9);
-          renderTrackList(np, upcoming, { emptyHtml: '<p style="color:rgba(255,255,255,.55);font-weight:600;font-size:13.5px;margin:4px 0">Queue khatam — koi gaana add karo.</p>', onPlay: (t, j) => playAt(S.idx + 1 + j) });
+          renderTrackList(np, upcoming, { emptyHtml: '<p style="color:rgba(255,255,255,.55);font-weight:600;font-size:13.5px;margin:4px 0">The queue ends here.</p>', onPlay: (t, j) => playAt(S.idx + 1 + j) });
           $("#npQueueWrap").style.display = S.queue.length > 1 ? "block" : "none";
         }
+        prefetchNext();
         markNowRows();
       }
       $("#clearQueue").addEventListener("click", () => {
         const cur = current();
         S.queue = cur ? [cur] : []; S.idx = cur ? 0 : -1;
-        refreshQueueUI(); toast("Queue clear ho gayi");
+        refreshQueueUI(); toast("Queue cleared");
       });
 
       /* ============================== player engine ============================== */
+      /* Prefetch pipeline: two silent Audio elements keep the browser's media
+         cache warm — one for the next track in queue, one for whatever row the
+         pointer is hovering — so taps and Next start with zero network wait. */
+      const prefetchEl = new Audio(); prefetchEl.preload = "auto"; prefetchEl.muted = true;
+      const warmEl = new Audio(); warmEl.preload = "auto"; warmEl.muted = true;
+      function nextInQueue() {
+        if (S.idx >= 0 && S.idx < S.queue.length - 1) return S.queue[S.idx + 1];
+        if (S.repeat === 1 && S.queue.length) return S.queue[0];
+        return null;
+      }
+      function prefetchNext() {
+        const n = nextInQueue();
+        if (n && n.src && prefetchEl.src !== n.src) { try { prefetchEl.src = n.src; prefetchEl.load(); } catch (e) {} }
+      }
+      function warmStream(track) {
+        if (!track || !track.src) return;
+        const cur = current();
+        if (cur && cur.id === track.id) return;
+        if (warmEl.src !== track.src) { try { warmEl.src = track.src; warmEl.load(); } catch (e) {} }
+      }
       function playFromList(list, index) {
         if (!list || !list.length) return;
         S.queue = list.slice(); S.idx = index; S.history = [];
@@ -1274,14 +1547,23 @@
         const t = current();
         if (!t) return;
         ensureGraph();
-        S.loading = true; syncTransport();
+        /* Optimistic UI: the transport flips to "playing" the instant of the tap;
+           the stream catches up behind the mini loading ring on the play button. */
+        S.loading = true;
+        if (autoplay) S.playing = true;
+        syncTransport();
         audio.src = t.src;
         audio.playbackRate = 1;
         if (autoplay) {
           const p = audio.play();
-          if (p) p.catch(() => { /* low quality fallback */ audio.src = t.srcLow; audio.play().catch(() => toast("Ye gaana play nahi ho paya")); });
+          if (p) p.catch(() => {
+            if (audio.src !== t.srcLow && t.srcLow) {
+              audio.src = t.srcLow;
+              audio.play().catch(() => { S.playing = false; syncTransport(); toast("This track could not play"); });
+            } else { S.playing = false; syncTransport(); toast("This track could not play"); }
+          });
         }
-        updatePlayerUI(); refreshQueueUI();
+        updatePlayerUI(); refreshQueueUI(); prefetchNext();
         if ("mediaSession" in navigator) {
           const art = [];
           if (t.img) art.push({ src: t.img, sizes: "500x500", type: "image/jpeg" });
@@ -1295,9 +1577,9 @@
         }
       }
       function togglePlay() {
-        if (!current()) { toast("Pehle koi gaana choose karo"); return; }
+        if (!current()) { toast("Choose a song first"); return; }
         ensureGraph();
-        if (audio.paused) audio.play().catch(() => toast("Play nahi ho paya — dobara tap karo"));
+        if (audio.paused) { S.playing = true; syncTransport(); audio.play().catch(() => { S.playing = false; syncTransport(); toast("Playback failed — tap again"); }); }
         else audio.pause();
       }
       function next(auto) {
@@ -1324,13 +1606,32 @@
       audio.addEventListener("play", () => { S.playing = true; S.loading = false; syncTransport(); markNowRows(); syncMediaState(); resumeCtx(); });
       audio.addEventListener("pause", () => { S.playing = false; syncTransport(); markNowRows(); syncMediaState(); });
       audio.addEventListener("waiting", () => { S.loading = true; syncTransport(); });
-      audio.addEventListener("playing", () => { S.loading = false; syncTransport(); resumeCtx(); });
+      audio.addEventListener("playing", () => { S.loading = false; syncTransport(); resumeCtx(); const t = current(); if (t) setCachedStream(t); prefetchNext(); });
       audio.addEventListener("ended", () => { next(true); syncMediaState(); });
-      audio.addEventListener("error", () => {
-        if (!current()) return;
-        if (audio.src !== current().srcLow && current().srcLow) { audio.src = current().srcLow; audio.play().catch(() => {}); return; }
-        S.loading = false; syncTransport();
-        toast("Stream error — agla gaana try kar raha hoon");
+      audio.addEventListener("error", async () => {
+        const t = current();
+        if (!t) return;
+        if (!t._triedLow && audio.src !== t.srcLow && t.srcLow) {
+          t._triedLow = true;
+          audio.src = t.srcLow; audio.play().catch(() => {});
+          return;
+        }
+        /* Never a dead end: swap in the closest playable match for this track. */
+        if (!t._altTried) {
+          t._altTried = true;
+          try {
+            const data = await api("/search/songs?query=" + encodeURIComponent(t.title + " " + t.artist) + "&page=0&limit=5", 9000);
+            const alt = normSongs(data.results || []).find((s) => s.id !== t.id);
+            if (alt) {
+              S.queue[S.idx] = alt;
+              toast("Closest playable match — " + alt.title);
+              loadTrack(true); refreshQueueUI();
+              return;
+            }
+          } catch (e) {}
+        }
+        S.loading = false; S.playing = false; syncTransport();
+        toast("Stream failed — moving to the next track");
         setTimeout(() => next(false), 600);
       });
       audio.addEventListener("timeupdate", syncSeek);
@@ -1381,9 +1682,12 @@
         [$("#pbFav"), $("#npFav")].forEach((b) => { if (b) { b.innerHTML = on ? ICONS.heartFill : ICONS.heart; b.classList.toggle("faved", !!on); } });
       }
       function syncTransport() {
-        const icon = S.loading ? '<span class="spin"></span>' : S.playing ? ICONS.pause : '<span class="ic-play" style="display:grid">' + ICONS.play + "</span>";
+        /* Optimistic icon: pause shows the moment playback is requested; the
+           .loading class adds the mini ring while the stream resolves. */
+        const icon = S.playing ? ICONS.pause : '<span class="ic-play" style="display:grid">' + ICONS.play + "</span>";
         $("#btnPlay").innerHTML = icon;
         $("#npPlay").innerHTML = icon;
+        [$("#btnPlay"), $("#npPlay")].forEach((b) => b && b.classList.toggle("loading", S.loading));
         [$("#btnShuffle"), $("#npShuffle")].forEach((b) => b && b.classList.toggle("on", S.shuffle));
         [$("#btnRepeat"), $("#npRepeat")].forEach((b) => {
           if (!b) return;
@@ -1405,35 +1709,48 @@
       wire("#btnEqOpen", () => showView("eq")); wire("#npEq", () => { closeNP(); showView("eq"); });
       wire("#btnQueueOpen", () => showView("queue"));
       wire("#npQueueBtn", () => { closeNP(); showView("queue"); });
-      wire("#npAddQueue", () => { const t = current(); if (t) { S.queue.push(t); refreshQueueUI(); toast("Queue me add — " + t.title); } });
+      wire("#npAddQueue", () => { const t = current(); if (t) { S.queue.push(t); refreshQueueUI(); toast("Added to queue — " + t.title); } });
       $("#pbArt").addEventListener("click", openNP);
       $("#pbMeta").addEventListener("click", openNP);
       $("#npClose").addEventListener("click", closeNP);
       function openNP() { if (!current()) return; $("#nowplaying").classList.add("open"); $("#nowplaying").setAttribute("aria-hidden", "false"); }
       function closeNP() { $("#nowplaying").classList.remove("open"); $("#nowplaying").setAttribute("aria-hidden", "true"); }
-      /* Bottom-sheet gesture: drag the grab handle (or the sheet header) down
-         past ~90px to dismiss, Apple Music style. Pointer capture keeps the
-         drag smooth; releasing early springs the sheet back via its CSS
-         transition. */
+      /* Bottom-sheet gesture with real drag physics: the sheet tracks the
+         finger 1:1 (transform only), the blurred backdrop parallaxes at a
+         fraction of the distance, and release snaps by velocity — a flick
+         dismisses it, a slow short drag springs it back. */
       (function () {
         const sheet = $("#nowplaying");
+        const bg = $("#npBg");
         let drag = null;
         function start(e) {
           if (!sheet.classList.contains("open")) return;
-          drag = { y: e.clientY, dy: 0 };
+          drag = { y: e.clientY, dy: 0, samples: [{ t: performance.now(), y: e.clientY }] };
           sheet.style.transition = "none";
+          if (bg) bg.style.animation = "none";
         }
         function move(e) {
           if (!drag) return;
           drag.dy = Math.max(0, e.clientY - drag.y);
+          drag.samples.push({ t: performance.now(), y: e.clientY });
+          while (drag.samples.length > 2 && drag.samples[0].t < performance.now() - 110) drag.samples.shift();
           sheet.style.transform = "translateY(" + drag.dy + "px)";
+          if (bg) bg.style.transform = "translateY(" + (drag.dy * 0.22).toFixed(1) + "px) scale(1.14)";
         }
         function end() {
           if (!drag) return;
-          const dy = drag.dy; drag = null;
+          const dy = drag.dy;
+          const s = drag.samples;
+          let v = 0;
+          if (s.length > 1) {
+            const dt = s[s.length - 1].t - s[0].t;
+            if (dt > 0) v = (s[s.length - 1].y - s[0].y) / dt; /* px per ms */
+          }
+          drag = null;
           sheet.style.transition = "";
           sheet.style.transform = "";
-          if (dy > 90) closeNP();
+          if (bg) { bg.style.transform = ""; bg.style.animation = ""; }
+          if (dy > 90 || v > 0.45) closeNP();
         }
         [["#npGrab"], [".np-top"]].forEach(([sel]) => {
           const el = $(sel);
