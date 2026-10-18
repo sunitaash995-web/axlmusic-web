@@ -4,34 +4,54 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#08080a" />
+    <meta name="theme-color" id="metaThemeColor" content="#08080a" />
     <link rel="icon" href="data:," />
     <title>Axlmusic Web</title>
+    <script>
+      /* apply the saved theme before first paint — no flash of the default */
+      try { var _t = localStorage.getItem("axlmusic_theme"); if (_t && _t !== "deathnote") document.documentElement.dataset.theme = _t; } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Black+Ops+One&family=Cinzel:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&family=Michroma&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
         color-scheme: dark;
+        /* ---- theme tokens: DEATH NOTE (default) ---- */
+        --acc: #e11d2e;
+        --acc-hi: #ff3b4d;
+        --acc-deep: #8a0e1a;
+        --acc-rgb: 225, 29, 46;
+        --acc-hi-rgb: 255, 59, 77;
+        --acc-deep-rgb: 138, 14, 26;
+        --ink-rgb: 243, 238, 226;
         --bg: #08080a;
         --bg-2: #0d0d10;
-        --glass: rgba(240, 235, 224, 0.05);
-        --glass-2: rgba(240, 235, 224, 0.09);
-        --stroke: rgba(240, 235, 224, 0.11);
-        --stroke-soft: rgba(240, 235, 224, 0.06);
+        --np-bg: #0b0b0d;
+        --disp-tt: none;
+        --shimmer: rgba(var(--ink-rgb), 0.09);
+        --bgwash:
+          radial-gradient(760px 500px at 10% -10%, rgba(var(--acc-rgb), 0.15), transparent 62%),
+          radial-gradient(680px 520px at 92% -4%, rgba(var(--acc-deep-rgb), 0.13), transparent 60%),
+          radial-gradient(900px 700px at 55% 118%, rgba(var(--acc-deep-rgb), 0.2), transparent 65%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        --glass: rgba(var(--ink-rgb), 0.05);
+        --glass-2: rgba(var(--ink-rgb), 0.09);
+        --stroke: rgba(var(--ink-rgb), 0.11);
+        --stroke-soft: rgba(var(--ink-rgb), 0.06);
         --text: #f3eee2;
-        --text-2: rgba(240, 235, 224, 0.66);
-        --text-3: rgba(240, 235, 224, 0.4);
-        --red: #e11d2e;
-        --red-hi: #ff3b4d;
-        --red-deep: #8a0e1a;
-        --grad: linear-gradient(135deg, #ff3b4d 0%, #e11d2e 48%, #9c0d1a 100%);
-        --grad-soft: linear-gradient(120deg, rgba(225, 29, 46, 0.2), rgba(156, 13, 26, 0.13));
-        --glow: 0 0 22px rgba(225, 29, 46, 0.35);
-        --paper: repeating-linear-gradient(180deg, transparent 0, transparent 25px, rgba(240, 235, 224, 0.028) 25px, rgba(240, 235, 224, 0.028) 26px);
+        --text-2: rgba(var(--ink-rgb), 0.66);
+        --text-3: rgba(var(--ink-rgb), 0.4);
+        --red: var(--acc);
+        --red-hi: var(--acc-hi);
+        --red-deep: var(--acc-deep);
+        --grad: linear-gradient(135deg, var(--acc-hi) 0%, var(--acc) 48%, var(--acc-deep) 100%);
+        --grad-soft: linear-gradient(120deg, rgba(var(--acc-rgb), 0.2), rgba(var(--acc-deep-rgb), 0.13));
+        --glow: 0 0 22px rgba(var(--acc-rgb), 0.35);
+        --paper: repeating-linear-gradient(180deg, transparent 0, transparent 25px, rgba(var(--ink-rgb), 0.028) 25px, rgba(var(--ink-rgb), 0.028) 26px);
         --spring: cubic-bezier(0.34, 1.45, 0.44, 1);
         --shadow: 0 18px 50px rgba(0, 0, 0, 0.62);
         --player-h: 92px;
@@ -55,18 +75,15 @@
       img { display: block; }
       * { -webkit-tap-highlight-color: transparent; }
       button, input, .track, .pl-card { touch-action: manipulation; }
-      ::selection { background: rgba(225, 29, 46, 0.45); }
+      ::selection { background: rgba(var(--acc-rgb), 0.45); }
 
       /* ---------- ambient background ---------- */
       .bg-fx { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: var(--bg); }
       .bg-fx::before {
         content: ""; position: absolute; inset: 0;
-        background:
-          radial-gradient(760px 500px at 10% -10%, rgba(225, 29, 46, 0.15), transparent 62%),
-          radial-gradient(680px 520px at 92% -4%, rgba(140, 12, 24, 0.13), transparent 60%),
-          radial-gradient(900px 700px at 55% 118%, rgba(90, 6, 14, 0.2), transparent 65%),
-          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        background: var(--bgwash);
       }
+      #fxCanvas { position: absolute; inset: 0; width: 100%; height: 100%; }
       .bg-fx::after {
         content: ""; position: absolute; inset: 0; opacity: 0.35; mix-blend-mode: overlay;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.16'/%3E%3C/svg%3E");
@@ -94,7 +111,7 @@
       .brand-mark {
         width: 38px; height: 38px; border-radius: 12px; flex: none;
         background: var(--grad); display: grid; place-items: center;
-        box-shadow: 0 8px 22px rgba(225, 29, 46, 0.45), 0 0 18px rgba(225, 29, 46, 0.22);
+        box-shadow: 0 8px 22px rgba(var(--acc-rgb), 0.45), 0 0 18px rgba(var(--acc-rgb), 0.22);
       }
       .brand-mark svg { width: 21px; height: 21px; }
       .brand-name { font-family: var(--font-disp); font-weight: 800; font-size: 20px; letter-spacing: 0.02em; line-height: 1; }
@@ -109,8 +126,8 @@
       .nav-btn svg { width: 20px; height: 20px; flex: none; opacity: 0.85; }
       .nav-btn:hover { background: var(--glass-2); color: var(--text); }
       .nav-btn:active { transform: scale(0.97); }
-      .nav-btn.active { background: var(--grad-soft); color: var(--text); box-shadow: inset 0 0 0 1px rgba(225, 29, 46, 0.28); }
-      .nav-btn.active svg { opacity: 1; color: var(--red-hi); filter: drop-shadow(0 0 6px rgba(225, 29, 46, 0.75)); }
+      .nav-btn.active { background: var(--grad-soft); color: var(--text); box-shadow: inset 0 0 0 1px rgba(var(--acc-rgb), 0.28); }
+      .nav-btn.active svg { opacity: 1; color: var(--red-hi); filter: drop-shadow(0 0 6px rgba(var(--acc-rgb), 0.75)); }
       .nav-badge { margin-left: auto; font-size: 11px; font-weight: 800; background: var(--red); color: #fff; border-radius: 99px; padding: 2px 8px; }
       .side-foot { margin-top: auto; padding: 14px 12px; border-radius: 16px; background: var(--glass); background-image: var(--paper); border: 1px solid var(--stroke-soft); }
       .side-foot b { font-family: var(--font-disp); font-size: 13.5px; display: block; margin-bottom: 4px; }
@@ -136,7 +153,7 @@
         backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
         transition: box-shadow 0.2s, border-color 0.2s;
       }
-      .search-box:focus-within { border-color: rgba(225, 29, 46, 0.6); box-shadow: 0 0 0 4px rgba(225, 29, 46, 0.16), 0 0 18px rgba(225, 29, 46, 0.12); }
+      .search-box:focus-within { border-color: rgba(var(--acc-rgb), 0.6); box-shadow: 0 0 0 4px rgba(var(--acc-rgb), 0.16), 0 0 18px rgba(var(--acc-rgb), 0.12); }
       .search-box svg { width: 19px; height: 19px; color: var(--text-3); flex: none; }
       .search-box input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--text); font-size: 15px; font-weight: 600; }
       .search-box input::placeholder { color: var(--text-3); }
@@ -152,7 +169,7 @@
         border-radius: 18px; padding: 8px;
         background: color-mix(in srgb, var(--bg-2) 82%, transparent);
         border: 1px solid var(--stroke);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 24px rgba(225, 29, 46, 0.08);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 24px rgba(var(--acc-rgb), 0.08);
         backdrop-filter: blur(26px) saturate(1.35); -webkit-backdrop-filter: blur(26px) saturate(1.35);
         transform-origin: top center;
         animation: sgIn 0.18s cubic-bezier(0.22, 1.2, 0.4, 1);
@@ -185,17 +202,17 @@
       .top-eq-chip.on .dot { background: var(--red-hi); box-shadow: 0 0 9px var(--red); }
 
       /* ---------- views ---------- */
-      #views { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 6px clamp(16px, 3.5vw, 36px) 34px; scrollbar-width: thin; scrollbar-color: rgba(225, 29, 46, 0.4) transparent; }
+      #views { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 6px clamp(16px, 3.5vw, 36px) 34px; scrollbar-width: thin; scrollbar-color: rgba(var(--acc-rgb), 0.4) transparent; }
       .view { display: none; animation: viewIn 0.26s cubic-bezier(0.22, 0.9, 0.3, 1); }
       .view.active { display: block; }
       @keyframes viewIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
       @media (prefers-reduced-motion: reduce) { .view { animation: none; } * { transition-duration: 0.01ms !important; } }
 
       .hero { padding: clamp(14px, 3vw, 30px) 4px 8px; position: relative; }
-      .hero-apple { position: absolute; top: clamp(16px, 3vw, 32px); right: 8px; width: 34px; height: 34px; color: var(--red); filter: drop-shadow(0 4px 14px rgba(225, 29, 46, 0.55)); opacity: 0.92; pointer-events: none; }
+      .hero-apple { position: absolute; top: clamp(16px, 3vw, 32px); right: 8px; width: 34px; height: 34px; color: var(--red); filter: drop-shadow(0 4px 14px rgba(var(--acc-rgb), 0.55)); opacity: 0.92; pointer-events: none; }
       .hero-apple svg { width: 100%; height: 100%; display: block; }
       .hero h1 { font-family: var(--font-disp); font-size: clamp(27px, 4.2vw, 42px); font-weight: 800; letter-spacing: 0.015em; margin: 0 0 10px; line-height: 1.14; }
-      .hero h1 .grad { color: var(--red-hi); text-shadow: 0 0 28px rgba(225, 29, 46, 0.4); }
+      .hero h1 .grad { color: var(--red-hi); text-shadow: 0 0 28px rgba(var(--acc-rgb), 0.4); }
       .hero p { margin: 0; color: var(--text-2); font-size: clamp(14px, 1.6vw, 16.5px); font-weight: 600; max-width: 56ch; line-height: 1.55; }
       .chip-row { display: flex; flex-wrap: wrap; gap: 9px; margin: 20px 0 4px; }
       .chip {
@@ -203,7 +220,7 @@
         background: var(--glass); border: 1px solid var(--stroke); color: var(--text-2);
         transition: transform 0.15s, background 0.15s, color 0.15s;
       }
-      .chip:hover { background: var(--glass-2); color: var(--text); transform: translateY(-1px); border-color: rgba(225, 29, 46, 0.35); }
+      .chip:hover { background: var(--glass-2); color: var(--text); transform: translateY(-1px); border-color: rgba(var(--acc-rgb), 0.35); }
       .chip:active { transform: scale(0.95); }
 
       .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin: 30px 0 14px; }
@@ -217,15 +234,15 @@
         backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
         transition: transform 0.22s var(--spring), background 0.18s, border-color 0.18s;
       }
-      .pl-card:hover { transform: translateY(-3px); background: var(--glass-2); border-color: rgba(225, 29, 46, 0.32); }
+      .pl-card:hover { transform: translateY(-3px); background: var(--glass-2); border-color: rgba(var(--acc-rgb), 0.32); }
       .pl-card:active { transform: scale(0.97); }
       .pl-card .art { position: relative; border-radius: 14px; overflow: hidden; aspect-ratio: 1; background: var(--grad-soft); box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45); transition: transform 0.32s var(--spring), box-shadow 0.32s; will-change: transform; }
-      .pl-card:hover .art { box-shadow: 0 20px 38px rgba(0, 0, 0, 0.55), 0 6px 22px rgba(225, 29, 46, 0.16); }
+      .pl-card:hover .art { box-shadow: 0 20px 38px rgba(0, 0, 0, 0.55), 0 6px 22px rgba(var(--acc-rgb), 0.16); }
       .pl-card .art img { width: 100%; height: 100%; object-fit: cover; }
       .pl-card .art .play-fab {
         position: absolute; right: 9px; bottom: 9px; width: 40px; height: 40px; border-radius: 50%;
         background: var(--grad); color: #fff; display: grid; place-items: center;
-        box-shadow: 0 8px 20px rgba(225, 29, 46, 0.5), 0 0 16px rgba(225, 29, 46, 0.3); opacity: 0; transform: translateY(5px);
+        box-shadow: 0 8px 20px rgba(var(--acc-rgb), 0.5), 0 0 16px rgba(var(--acc-rgb), 0.3); opacity: 0; transform: translateY(5px);
         transition: opacity 0.18s, transform 0.18s;
       }
       .pl-card:hover .play-fab, .pl-card:focus-visible .play-fab { opacity: 1; transform: none; }
@@ -255,9 +272,9 @@
       .icon-btn:hover { background: var(--glass-2); color: var(--text); }
       .icon-btn:active { transform: scale(0.92); }
       .icon-btn svg { width: 18px; height: 18px; }
-      .icon-btn.faved { color: var(--red-hi); filter: drop-shadow(0 0 6px rgba(225, 29, 46, 0.55)); }
-      .track.now { background: rgba(225, 29, 46, 0.11); box-shadow: inset 0 0 0 1px rgba(225, 29, 46, 0.25); }
-      .track.now .t-title { color: var(--red-hi); text-shadow: 0 0 14px rgba(225, 29, 46, 0.4); }
+      .icon-btn.faved { color: var(--red-hi); filter: drop-shadow(0 0 6px rgba(var(--acc-rgb), 0.55)); }
+      .track.now { background: rgba(var(--acc-rgb), 0.11); box-shadow: inset 0 0 0 1px rgba(var(--acc-rgb), 0.25); }
+      .track.now .t-title { color: var(--red-hi); text-shadow: 0 0 14px rgba(var(--acc-rgb), 0.4); }
       .eq-bars { display: none; align-items: flex-end; gap: 2px; height: 13px; flex: none; }
       .track.now.playing .eq-bars { display: inline-flex; }
       .eq-bars i { width: 3px; border-radius: 2px; background: var(--grad); animation: bounce 0.9s ease-in-out infinite; }
@@ -274,18 +291,18 @@
       .empty b { display: block; font-family: var(--font-disp); font-size: 16px; letter-spacing: 0.02em; color: var(--text); margin-bottom: 6px; }
       .empty p { margin: 0; font-size: 13.5px; line-height: 1.55; }
       .empty button { margin-top: 14px; background: var(--grad); color: #fff; font-weight: 800; font-size: 13px; padding: 9px 18px; border-radius: 99px; }
-      .skeleton { border-radius: 14px; background: linear-gradient(100deg, var(--glass) 40%, var(--glass-2) 50%, var(--glass) 60%); background-size: 200% 100%; animation: shimmer 1.3s infinite; }
+      .skeleton { border-radius: 14px; background: linear-gradient(100deg, var(--glass) 40%, var(--shimmer) 50%, var(--glass) 60%); background-size: 200% 100%; animation: shimmer 1.3s infinite; }
       @keyframes shimmer { to { background-position: -200% 0; } }
       /* depth-based entrance — transform + opacity only, fill backwards so hover/tilt transforms stay free afterwards */
       @keyframes riseIn { from { opacity: 0; transform: translateY(12px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
       .track, .pl-card { animation: riseIn 0.28s cubic-bezier(0.22, 0.9, 0.3, 1) backwards; animation-delay: calc(var(--i, 0) * 24ms); }
       @media (prefers-reduced-motion: reduce) { .track, .pl-card { animation: none; } #suggest { animation: none; } }
       .load-more { display: block; margin: 22px auto 4px; padding: 11px 26px; border-radius: 99px; background: var(--glass); border: 1px solid var(--stroke); font-weight: 800; font-size: 13.5px; }
-      .load-more:hover { background: var(--glass-2); border-color: rgba(225, 29, 46, 0.35); }
+      .load-more:hover { background: var(--glass-2); border-color: rgba(var(--acc-rgb), 0.35); }
       .load-more:active { transform: scale(0.96); }
 
       /* ---------- tabs (iOS segmented control) ---------- */
-      .tabs { display: inline-flex; gap: 2px; margin: 4px 0 18px; padding: 3px; border-radius: 99px; background: rgba(240, 235, 224, 0.06); border: 1px solid var(--stroke-soft); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); max-width: 100%; }
+      .tabs { display: inline-flex; gap: 2px; margin: 4px 0 18px; padding: 3px; border-radius: 99px; background: rgba(var(--ink-rgb), 0.06); border: 1px solid var(--stroke-soft); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); max-width: 100%; }
       .tab { padding: 8px 20px; border-radius: 99px; font-size: 13.5px; font-weight: 800; background: transparent; border: 0; color: var(--text-2); transition: background 0.25s var(--spring), color 0.2s, transform 0.15s; white-space: nowrap; }
       .tab:active { transform: scale(0.95); }
       .tab.active { background: var(--text); color: #0a0a0c; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); }
@@ -298,7 +315,7 @@
       .coll-head h1 { font-family: var(--font-disp); font-size: clamp(23px, 3.4vw, 36px); font-weight: 800; letter-spacing: 0.015em; margin: 8px 0 6px; line-height: 1.16; }
       .coll-head p { margin: 0; color: var(--text-2); font-weight: 600; font-size: 14px; }
       .coll-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-      .btn-grad { display: inline-flex; align-items: center; gap: 8px; background: var(--grad); color: #fff; font-weight: 800; font-size: 14px; padding: 12px 22px; border-radius: 99px; box-shadow: 0 10px 26px rgba(225, 29, 46, 0.35), 0 0 18px rgba(225, 29, 46, 0.18); transition: transform 0.18s var(--spring); }
+      .btn-grad { display: inline-flex; align-items: center; gap: 8px; background: var(--grad); color: #fff; font-weight: 800; font-size: 14px; padding: 12px 22px; border-radius: 99px; box-shadow: 0 10px 26px rgba(var(--acc-rgb), 0.35), 0 0 18px rgba(var(--acc-rgb), 0.18); transition: transform 0.18s var(--spring); }
       .btn-grad:hover { transform: translateY(-1px); }
       .btn-grad:active { transform: scale(0.96); }
       .btn-grad svg { width: 16px; height: 16px; }
@@ -313,7 +330,7 @@
       .eq-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
       .switch { position: relative; width: 54px; height: 32px; border-radius: 99px; background: var(--glass-2); border: 1px solid var(--stroke); transition: background 0.25s, box-shadow 0.25s; flex: none; }
       .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 26px; height: 26px; border-radius: 50%; background: #efe9db; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); transition: transform 0.28s var(--spring), background 0.2s; }
-      .switch[aria-checked="true"] { background: var(--red); border-color: transparent; box-shadow: 0 0 16px rgba(225, 29, 46, 0.45); }
+      .switch[aria-checked="true"] { background: var(--red); border-color: transparent; box-shadow: 0 0 16px rgba(var(--acc-rgb), 0.45); }
       .switch[aria-checked="true"]::after { transform: translateX(22px); background: #fff; }
       .viz-wrap { border-radius: var(--radius); background: var(--glass); background-image: var(--paper); border: 1px solid var(--stroke-soft); padding: 14px 16px 8px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
       #viz { width: 100%; height: 92px; display: block; }
@@ -322,7 +339,7 @@
       .preset { padding: 9px 16px; border-radius: 99px; font-size: 13px; font-weight: 800; background: var(--glass); border: 1px solid var(--stroke-soft); color: var(--text-2); transition: all 0.15s; }
       .preset:hover { color: var(--text); background: var(--glass-2); }
       .preset:active { transform: scale(0.94); }
-      .preset.active { background: var(--grad); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(225, 29, 46, 0.35), 0 0 14px rgba(225, 29, 46, 0.2); }
+      .preset.active { background: var(--grad); color: #fff; border-color: transparent; box-shadow: 0 8px 20px rgba(var(--acc-rgb), 0.35), 0 0 14px rgba(var(--acc-rgb), 0.2); }
       .faders {
         display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px;
         margin-top: 16px; padding: 22px 14px 14px; border-radius: var(--radius);
@@ -341,13 +358,13 @@
       .fader input[type="range"]::-webkit-slider-thumb {
         -webkit-appearance: none; width: 26px; height: 15px; margin-top: -5.5px; border-radius: 5px;
         background: linear-gradient(180deg, #fdfbf6, #d9d3c5); border: 1px solid rgba(0, 0, 0, 0.45);
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 -3px 0 rgba(225, 29, 46, 0.6);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 -3px 0 rgba(var(--acc-rgb), 0.6);
       }
       .fader input[type="range"]::-moz-range-track { height: 4px; background: transparent; }
       .fader input[type="range"]::-moz-range-thumb {
         width: 24px; height: 14px; border-radius: 5px;
         background: linear-gradient(180deg, #fdfbf6, #d9d3c5); border: 1px solid rgba(0, 0, 0, 0.45);
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 -3px 0 rgba(225, 29, 46, 0.6);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 -3px 0 rgba(var(--acc-rgb), 0.6);
       }
       .fader .f-freq { font-size: 11px; font-weight: 800; color: var(--text-3); letter-spacing: 0.02em; }
       .eq-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
@@ -357,10 +374,28 @@
       .gain-card p { margin: 8px 0 0; font-size: 12px; color: var(--text-3); font-weight: 600; line-height: 1.45; }
       input[type="range"].wide { -webkit-appearance: none; appearance: none; width: 100%; height: 26px; background: transparent; cursor: pointer; }
       input[type="range"].wide::-webkit-slider-runnable-track { height: 6px; border-radius: 6px; background: var(--glass-2); box-shadow: inset 0 0 0 1px var(--stroke-soft); }
-      input[type="range"].wide::-webkit-slider-thumb { -webkit-appearance: none; width: 19px; height: 19px; margin-top: -6.5px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(225, 29, 46, 0.4); }
+      input[type="range"].wide::-webkit-slider-thumb { -webkit-appearance: none; width: 19px; height: 19px; margin-top: -6.5px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(var(--acc-rgb), 0.4); }
       input[type="range"].wide::-moz-range-track { height: 6px; border-radius: 6px; background: var(--glass-2); }
-      input[type="range"].wide::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(225, 29, 46, 0.4); }
+      input[type="range"].wide::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(var(--acc-rgb), 0.4); }
       .eq-disabled .faders, .eq-disabled .gain-card, .eq-disabled .preset-row { opacity: 0.42; pointer-events: none; filter: saturate(0.4); }
+
+      /* ---------- music source (YouTube / JioSaavn) ---------- */
+      #ytHolder { position: fixed; left: -10000px; top: 0; width: 320px; height: 180px; overflow: hidden; pointer-events: none; }
+      .src-card { border-radius: var(--radius); background: var(--glass); background-image: var(--paper); border: 1px solid var(--stroke-soft); padding: 16px 18px; margin-bottom: 18px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+      .src-card h2 { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+      .src-card p { margin: 0 0 13px; font-size: 12.5px; color: var(--text-3); font-weight: 600; line-height: 1.5; max-width: 660px; }
+      .seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 99px; background: rgba(var(--ink-rgb), 0.06); border: 1px solid var(--stroke-soft); max-width: 100%; }
+      .seg button { padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 800; color: var(--text-2); white-space: nowrap; transition: background 0.25s var(--spring), color 0.2s, transform 0.15s; }
+      .seg button:active { transform: scale(0.95); }
+      .seg button.active { background: var(--grad); color: #fff; box-shadow: 0 6px 16px rgba(var(--acc-rgb), 0.35); }
+      .src-badge { display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 9px; border-radius: 99px; border: 1px solid rgba(var(--acc-rgb), 0.45); color: var(--red-hi); background: rgba(var(--acc-rgb), 0.12); white-space: nowrap; flex: none; }
+      .src-badge[hidden] { display: none; }
+      .src-badge.saavn { border-color: var(--stroke); color: var(--text-2); background: var(--glass); }
+      .eq-yt-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: rgba(var(--acc-rgb), 0.1); border: 1px solid rgba(var(--acc-rgb), 0.35); font-size: 12.5px; }
+      .eq-yt-note[hidden] { display: none; }
+      .eq-yt-note b { color: var(--red-hi); white-space: nowrap; font-weight: 800; }
+      .eq-yt-note span { color: var(--text-2); font-weight: 600; line-height: 1.45; }
+      @media (max-width: 560px) { #pbSrcBadge { display: none; } .eq-yt-note { flex-direction: column; gap: 3px; } }
 
       /* ---------- queue ---------- */
       .queue-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -374,7 +409,7 @@
         display: grid; grid-template-columns: minmax(200px, 1fr) minmax(320px, 1.6fr) minmax(200px, 1fr);
         align-items: center; gap: 18px; padding: 10px 20px;
         background: color-mix(in srgb, var(--bg-2) 55%, transparent);
-        border-top: 1px solid rgba(225, 29, 46, 0.16);
+        border-top: 1px solid rgba(var(--acc-rgb), 0.16);
         box-shadow: 0 -14px 38px rgba(0, 0, 0, 0.45);
         backdrop-filter: blur(26px) saturate(1.3); -webkit-backdrop-filter: blur(26px) saturate(1.3);
       }
@@ -390,13 +425,13 @@
       .ctl-btn:hover { color: var(--text); background: var(--glass); }
       .ctl-btn:active { transform: scale(0.92); }
       .ctl-btn svg { width: 21px; height: 21px; }
-      .ctl-btn.on { color: var(--red-hi); filter: drop-shadow(0 0 7px rgba(225, 29, 46, 0.5)); }
+      .ctl-btn.on { color: var(--red-hi); filter: drop-shadow(0 0 7px rgba(var(--acc-rgb), 0.5)); }
       .ctl-btn.on::after { content: ""; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--red-hi); }
       .ctl-btn .rep-one { position: absolute; top: 4px; right: 4px; font-size: 8.5px; font-weight: 900; background: var(--red); color: #fff; border-radius: 99px; padding: 0.5px 4px; }
       .play-btn {
         position: relative;
         width: 50px; height: 50px; border-radius: 50%; background: var(--grad); color: #fff;
-        display: grid; place-items: center; box-shadow: 0 10px 26px rgba(225, 29, 46, 0.5), 0 0 22px rgba(225, 29, 46, 0.3);
+        display: grid; place-items: center; box-shadow: 0 10px 26px rgba(var(--acc-rgb), 0.5), 0 0 22px rgba(var(--acc-rgb), 0.3);
         transition: transform 0.18s var(--spring);
       }
       /* mini loading ring on the play button while the stream resolves — never a full-screen blocker */
@@ -412,11 +447,11 @@
       .pb-seek { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 560px; }
       .pb-seek time { font-size: 11.5px; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums; min-width: 34px; text-align: center; }
       .seek { -webkit-appearance: none; appearance: none; flex: 1; height: 22px; background: transparent; cursor: pointer; --fill: 0%; }
-      .seek::-webkit-slider-runnable-track { height: 5px; border-radius: 5px; background: linear-gradient(90deg, #e11d2e, #ff3b4d) 0/var(--fill) 100% no-repeat, var(--glass-2); }
+      .seek::-webkit-slider-runnable-track { height: 5px; border-radius: 5px; background: linear-gradient(90deg, var(--acc), var(--acc-hi)) 0/var(--fill) 100% no-repeat, var(--glass-2); }
       .seek::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 2px 7px rgba(0, 0, 0, 0.6); opacity: 0; transition: opacity 0.15s; }
       .seek:hover::-webkit-slider-thumb, .seek:active::-webkit-slider-thumb { opacity: 1; }
       .seek::-moz-range-track { height: 5px; border-radius: 5px; background: var(--glass-2); }
-      .seek::-moz-range-progress { height: 5px; border-radius: 5px; background: linear-gradient(90deg, #e11d2e, #ff3b4d); }
+      .seek::-moz-range-progress { height: 5px; border-radius: 5px; background: linear-gradient(90deg, var(--acc), var(--acc-hi)); }
       .seek::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 7px rgba(0, 0, 0, 0.6); }
       .pb-right { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
       .vol-wrap { display: flex; align-items: center; gap: 7px; }
@@ -435,13 +470,13 @@
       #bottomnav button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; font-weight: 800; color: var(--text-3); transition: transform 0.15s var(--spring), color 0.15s; }
       #bottomnav button:active { transform: scale(0.9); }
       #bottomnav button svg { width: 22px; height: 22px; }
-      #bottomnav button.active { color: var(--red-hi); filter: drop-shadow(0 0 7px rgba(225, 29, 46, 0.45)); }
+      #bottomnav button.active { color: var(--red-hi); filter: drop-shadow(0 0 7px rgba(var(--acc-rgb), 0.45)); }
 
       /* ---------- now playing sheet ---------- */
       #nowplaying {
         position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column;
         transform: translateY(103%); transition: transform 0.38s cubic-bezier(0.32, 1.15, 0.3, 1);
-        background: #0b0b0d; overflow: hidden; will-change: transform;
+        background: var(--np-bg); overflow: hidden; will-change: transform;
       }
       #nowplaying.open { transform: none; }
       .np-bg { position: absolute; inset: -40px; background-size: cover; background-position: center; filter: blur(60px) saturate(1.35); opacity: 0.5; transform: scale(1.1); }
@@ -453,11 +488,11 @@
       .np-grab:active { cursor: grabbing; background: rgba(255, 255, 255, 0.5); }
       .np-top { width: 100%; max-width: 640px; display: flex; align-items: center; justify-content: space-between; }
       .np-top > span { font-family: var(--font-disp); font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255, 255, 255, 0.72); display: inline-flex; align-items: center; }
-      .np-apple { display: inline-grid; place-items: center; width: 16px; height: 16px; color: var(--red-hi); margin-left: 7px; filter: drop-shadow(0 0 6px rgba(225, 29, 46, 0.6)); }
+      .np-apple { display: inline-grid; place-items: center; width: 16px; height: 16px; color: var(--red-hi); margin-left: 7px; filter: drop-shadow(0 0 6px rgba(var(--acc-rgb), 0.6)); }
       .np-apple svg { width: 100%; height: 100%; display: block; }
       .np-close { width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); display: grid; place-items: center; color: #fff; }
       .np-close svg { width: 19px; height: 19px; }
-      .np-art { width: min(66vw, 330px); aspect-ratio: 1; border-radius: 26px; object-fit: cover; margin-top: clamp(16px, 4vh, 38px); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 44px rgba(225, 29, 46, 0.14); will-change: transform; }
+      .np-art { width: min(66vw, 330px); aspect-ratio: 1; border-radius: 26px; object-fit: cover; margin-top: clamp(16px, 4vh, 38px); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), 0 0 44px rgba(var(--acc-rgb), 0.14); will-change: transform; }
       /* slow Ken Burns depth zoom while the sheet is open */
       #nowplaying.open .np-art { animation: kenburns 16s ease-in-out infinite alternate; }
       @keyframes kenburns { from { transform: scale(1) translateY(0); } to { transform: scale(1.06) translateY(-5px); } }
@@ -467,7 +502,7 @@
       .np-meta p { margin: 5px 0 0; color: rgba(255, 255, 255, 0.68); font-weight: 600; font-size: 15px; }
       .np-fav { width: 44px; height: 44px; flex: none; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, 0.1); color: #fff; }
       .np-fav svg { width: 20px; height: 20px; }
-      .np-fav.faved { color: var(--red-hi); background: rgba(225, 29, 46, 0.22); }
+      .np-fav.faved { color: var(--red-hi); background: rgba(var(--acc-rgb), 0.22); }
       #npViz { width: 100%; max-width: 640px; height: 54px; margin-top: 20px; }
       .np-seek { width: 100%; max-width: 640px; margin-top: 12px; }
       .np-seek .seek { width: 100%; }
@@ -492,7 +527,7 @@
       .np-queue .track .t-artist { color: rgba(255, 255, 255, 0.6); }
       .np-queue .track .t-dur { color: rgba(255, 255, 255, 0.45); }
       .np-queue .track .icon-btn { color: rgba(255, 255, 255, 0.7); }
-      .np-queue .track.now { background: rgba(225, 29, 46, 0.2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+      .np-queue .track.now { background: rgba(var(--acc-rgb), 0.2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
       .np-queue .track.now .t-title { color: #ffc9cd; text-shadow: none; }
 
       /* ---------- toast ---------- */
@@ -542,10 +577,175 @@
         .fader .f-box { width: 30px; height: 138px; }
         .fader input[type="range"] { width: 138px; }
       }
+
+      /* ================= THEME SYSTEM ================= */
+      /* Display headings take the theme's case treatment (condensed / angular / distressed themes go uppercase) */
+      .brand-name, .hero h1, .section-head h2, .queue-head h1, .coll-head h1, .np-meta h2, .empty b, .side-foot b { text-transform: var(--disp-tt); }
+
+      /* ---- NINJA STORM (Naruto-inspired): vivid orange, storm grey, speed lines ---- */
+      html[data-theme="ninja"] {
+        --acc: #ff7b00; --acc-hi: #ffa940; --acc-deep: #9a4a00;
+        --acc-rgb: 255, 123, 0; --acc-hi-rgb: 255, 169, 64; --acc-deep-rgb: 154, 74, 0;
+        --ink-rgb: 246, 240, 231;
+        --bg: #070503; --bg-2: #0f0a05; --np-bg: #0a0703;
+        --text: #f8f3ea;
+        --font-disp: "Anton", "Arial Narrow", sans-serif;
+        --disp-tt: uppercase;
+        --paper: repeating-linear-gradient(115deg, transparent 0, transparent 24px, rgba(var(--ink-rgb), 0.032) 24px, rgba(var(--ink-rgb), 0.032) 25px);
+        --shimmer: rgba(255, 123, 0, 0.16);
+        --bgwash:
+          radial-gradient(820px 520px at 8% -12%, rgba(255, 123, 0, 0.22), transparent 60%),
+          radial-gradient(700px 520px at 95% -6%, rgba(125, 133, 144, 0.15), transparent 62%),
+          radial-gradient(900px 700px at 55% 118%, rgba(154, 74, 0, 0.22), transparent 65%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      }
+      /* ---- CURSED ENERGY (Jujutsu Kaisen-inspired): indigo night, electric violet, cursed red ---- */
+      html[data-theme="cursed"] {
+        --acc: #7c3aed; --acc-hi: #a78bfa; --acc-deep: #4c1d95;
+        --acc-rgb: 124, 58, 237; --acc-hi-rgb: 167, 139, 250; --acc-deep-rgb: 76, 29, 149;
+        --ink-rgb: 233, 231, 255;
+        --bg: #0d0d1a; --bg-2: #12122b; --np-bg: #0a0a18;
+        --text: #efedff;
+        --grad: linear-gradient(135deg, #c084fc 0%, #7c3aed 46%, #dc2626 125%);
+        --font-disp: "Michroma", "Segoe UI", sans-serif;
+        --disp-tt: uppercase;
+        --paper:
+          repeating-linear-gradient(90deg, transparent 0, transparent 34px, rgba(var(--ink-rgb), 0.03) 34px, rgba(var(--ink-rgb), 0.03) 35px),
+          repeating-linear-gradient(0deg, transparent 0, transparent 34px, rgba(var(--ink-rgb), 0.022) 34px, rgba(var(--ink-rgb), 0.022) 35px);
+        --shimmer: rgba(124, 58, 237, 0.2);
+        --bgwash:
+          radial-gradient(820px 540px at 10% -12%, rgba(124, 58, 237, 0.25), transparent 60%),
+          radial-gradient(680px 520px at 94% -4%, rgba(220, 38, 38, 0.1), transparent 60%),
+          radial-gradient(900px 700px at 55% 118%, rgba(76, 29, 149, 0.3), transparent 65%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      }
+      /* ---- DOOMSDAY / AFTERMATH: charred black, ember orange, ash ---- */
+      html[data-theme="doomsday"] {
+        --acc: #ff4500; --acc-hi: #ff7a29; --acc-deep: #8f2600;
+        --acc-rgb: 255, 69, 0; --acc-hi-rgb: 255, 122, 41; --acc-deep-rgb: 143, 38, 0;
+        --ink-rgb: 240, 232, 219;
+        --bg: #0a0705; --bg-2: #130c06; --np-bg: #0c0805;
+        --text: #f4eee1;
+        --font-disp: "Black Ops One", "Arial Black", sans-serif;
+        --disp-tt: uppercase;
+        --paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%23f0e8db' stroke-opacity='0.055' stroke-width='1.2'%3E%3Cpath d='M20 0l14 26-8 18 16 22-6 20'/%3E%3Cpath d='M118 160l-10-24 12-16-14-20 8-18'/%3E%3Cpath d='M0 118l26-8 14 12 22-6'/%3E%3Cpath d='M160 44l-24 10-16-10'/%3E%3C/g%3E%3C/svg%3E");
+        --shimmer: rgba(255, 69, 0, 0.16);
+        --bgwash:
+          radial-gradient(820px 520px at 12% -12%, rgba(255, 69, 0, 0.16), transparent 60%),
+          radial-gradient(760px 560px at 92% -6%, rgba(150, 150, 150, 0.1), transparent 62%),
+          radial-gradient(1000px 760px at 50% 120%, rgba(255, 69, 0, 0.2), transparent 62%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+      }
+
+      /* per-theme play-button aura: ninja pulses hot, cursed breathes violet, doomsday flickers like an ember */
+      html[data-theme="ninja"] .play-btn { animation: thPulseHot 1.7s ease-in-out infinite; }
+      html[data-theme="cursed"] .play-btn { animation: thPulseHot 3.4s ease-in-out infinite; }
+      html[data-theme="doomsday"] .play-btn { animation: thFlicker 2.6s linear infinite; }
+      @keyframes thPulseHot {
+        0%, 100% { box-shadow: 0 10px 26px rgba(var(--acc-rgb), 0.5), 0 0 18px rgba(var(--acc-rgb), 0.28); }
+        50% { box-shadow: 0 10px 30px rgba(var(--acc-rgb), 0.66), 0 0 36px rgba(var(--acc-rgb), 0.52); }
+      }
+      @keyframes thFlicker {
+        0%, 100% { box-shadow: 0 10px 26px rgba(var(--acc-rgb), 0.5), 0 0 20px rgba(var(--acc-rgb), 0.3); }
+        18% { box-shadow: 0 10px 26px rgba(var(--acc-rgb), 0.62), 0 0 34px rgba(var(--acc-rgb), 0.55); }
+        34% { box-shadow: 0 10px 22px rgba(var(--acc-rgb), 0.38), 0 0 12px rgba(var(--acc-rgb), 0.2); }
+        52% { box-shadow: 0 10px 28px rgba(var(--acc-rgb), 0.58), 0 0 30px rgba(var(--acc-rgb), 0.48); }
+        71% { box-shadow: 0 10px 24px rgba(var(--acc-rgb), 0.44), 0 0 16px rgba(var(--acc-rgb), 0.26); }
+        86% { box-shadow: 0 10px 27px rgba(var(--acc-rgb), 0.55), 0 0 26px rgba(var(--acc-rgb), 0.42); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html[data-theme="ninja"] .play-btn, html[data-theme="cursed"] .play-btn, html[data-theme="doomsday"] .play-btn { animation: none; }
+      }
+
+      /* empty / error states carry the theme's motif as a watermark */
+      .empty { position: relative; overflow: hidden; }
+      .empty::after {
+        content: ""; position: absolute; right: -12px; bottom: -16px; width: 108px; height: 108px;
+        opacity: 0.13; background-repeat: no-repeat; background-position: center; background-size: contain; pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23e11d2e' d='M12.1 7.4c.2-2 1.5-3.5 3.4-4 .2 2-1.3 3.8-3.4 4Zm5.9 1.2c-1.2-.7-2.8-.6-4 .2-.6.3-1.4.3-2 0-1.2-.8-2.8-.9-4-.2-2.1 1.3-3.1 4.3-2.2 7.3.7 2.3 2.2 4.6 3.7 4.6.9 0 1.5-.5 2.5-.5s1.6.5 2.5.5c1.5 0 3-2.3 3.7-4.6.9-3-.1-6-2.2-7.3Z'/%3E%3C/svg%3E");
+      }
+      html[data-theme="ninja"] .empty::after {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23ff7b00' stroke-width='1.7' stroke-linecap='round' d='M12 12a2 2 0 0 1 2 2 3.5 3.5 0 0 1-3.5-3.5A5.5 5.5 0 0 1 16 16a8 8 0 0 1-8-8 10.5 10.5 0 0 1 10.5 10.5'/%3E%3C/svg%3E");
+      }
+      html[data-theme="cursed"] .empty::after {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%237c3aed' stroke-width='1.7' stroke-linecap='round' d='M3.5 5.2h17M5.8 5.2c2 1.1 4 1.6 6.2 1.6s4.2-.5 6.2-1.6M6.8 9.6h10.4M8.8 9.6V20M15.2 9.6V20'/%3E%3C/svg%3E");
+      }
+      html[data-theme="doomsday"] .empty::after {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff4500' d='M12 2.8c.9 3.4-.5 5.1-2 6.6C8.6 10.8 7.9 12.3 7.9 14a4.6 4.6 0 0 0 9.2 0c0-1.3-.4-2.4-1.1-3.4-.3 1-.9 1.8-1.8 2.3.4-3-.5-6.7-2.2-10.1Z'/%3E%3C/svg%3E");
+      }
+
+      /* theme-switch crossfade veil */
+      #themeVeil { position: fixed; inset: 0; z-index: 200; pointer-events: none; opacity: 0; transition: opacity 0.3s ease; }
+
+      /* ---------- theme picker sheet ---------- */
+      #themeSheet { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; }
+      #themeSheet[hidden] { display: none; }
+      .th-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: thFade 0.25s ease; }
+      @keyframes thFade { from { opacity: 0; } }
+      .th-panel {
+        position: relative; width: min(900px, 100%); max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
+        background: color-mix(in srgb, var(--bg-2) 88%, transparent);
+        border: 1px solid var(--stroke); border-bottom: 0; border-radius: 26px 26px 0 0;
+        padding: 8px clamp(16px, 3.5vw, 30px) calc(24px + env(safe-area-inset-bottom));
+        backdrop-filter: blur(28px) saturate(1.35); -webkit-backdrop-filter: blur(28px) saturate(1.35);
+        box-shadow: var(--shadow); animation: thUp 0.38s var(--spring);
+      }
+      @keyframes thUp { from { transform: translateY(48px); opacity: 0.4; } }
+      @media (min-width: 861px) {
+        #themeSheet { align-items: center; padding: 22px; }
+        .th-panel { border-bottom: 1px solid var(--stroke); border-radius: 26px; }
+      }
+      @media (prefers-reduced-motion: reduce) { .th-panel, .th-backdrop { animation: none; } }
+      .th-grab { width: 46px; height: 5px; border-radius: 99px; background: var(--glass-2); margin: 2px auto 12px; }
+      .th-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+      .th-head h2 { font-family: var(--font-disp); font-size: clamp(20px, 3vw, 26px); font-weight: 800; letter-spacing: 0.02em; margin: 0; text-transform: var(--disp-tt); }
+      .th-head p { margin: 5px 0 0; color: var(--text-2); font-size: 13px; font-weight: 600; line-height: 1.5; }
+      .th-close { width: 38px; height: 38px; flex: none; border-radius: 50%; background: var(--glass-2); display: grid; place-items: center; color: var(--text-2); }
+      .th-close svg { width: 16px; height: 16px; }
+      .th-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 14px; margin-top: 18px; }
+      .th-card {
+        position: relative; text-align: left; border-radius: 20px; padding: 10px;
+        background: rgba(127, 127, 140, 0.07); border: 1px solid rgba(127, 127, 140, 0.16);
+        transition: transform 0.2s var(--spring), border-color 0.2s, box-shadow 0.25s;
+      }
+      .th-card:hover { transform: translateY(-3px); }
+      .th-card:active { transform: scale(0.98); }
+      .th-card.active { border-color: var(--p-acc); box-shadow: 0 0 0 1px var(--p-acc), 0 16px 36px rgba(0, 0, 0, 0.5), 0 0 28px var(--p-glow); }
+      .th-badge {
+        position: absolute; top: 16px; right: 16px; z-index: 2; display: none;
+        font-size: 9.5px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+        background: var(--p-acc); color: #fff; padding: 3.5px 8px; border-radius: 99px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      }
+      .th-card.active .th-badge { display: block; }
+      .th-prev { border-radius: 14px; background: var(--p-bg); padding: 12px; color: var(--p-ink); overflow: hidden; }
+      .tp-top { display: flex; align-items: center; gap: 7px; margin-bottom: 11px; }
+      .tp-mark { width: 17px; height: 17px; border-radius: 5.5px; background: var(--p-grad); flex: none; box-shadow: 0 0 10px var(--p-glow); }
+      .tp-bar { height: 6px; border-radius: 3px; background: var(--p-line); }
+      .tp-title { font-family: var(--p-font); font-size: 16.5px; line-height: 1.15; letter-spacing: 0.01em; margin-bottom: 4px; }
+      .tp-title em { font-style: normal; color: var(--p-hi); }
+      .tp-row { display: flex; align-items: center; gap: 8px; margin-top: 9px; }
+      .tp-thumb { width: 23px; height: 23px; border-radius: 6.5px; background: var(--p-soft); flex: none; }
+      .tp-player { display: flex; align-items: center; gap: 9px; margin-top: 13px; }
+      .tp-play { width: 31px; height: 31px; border-radius: 50%; background: var(--p-grad); display: grid; place-items: center; flex: none; box-shadow: 0 6px 16px var(--p-glow); animation: tpPulse 2s ease-in-out infinite; }
+      .tp-play svg { width: 13px; height: 13px; margin-left: 1.5px; }
+      @keyframes tpPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+      .tp-eq { display: flex; gap: 2.5px; align-items: flex-end; height: 17px; margin-left: auto; }
+      .tp-eq i { width: 3.5px; border-radius: 2px; background: var(--p-acc); transform-origin: bottom; animation: tpBounce 0.85s ease-in-out infinite alternate; }
+      @keyframes tpBounce { from { transform: scaleY(0.3); } to { transform: scaleY(1); } }
+      @media (prefers-reduced-motion: reduce) { .tp-eq i, .tp-play { animation: none; } }
+      .th-meta { padding: 11px 4px 2px; }
+      .th-name { font-family: var(--p-font); font-size: 15.5px; line-height: 1.25; color: var(--text); }
+      .th-tag { font-size: 12px; color: var(--text-2); font-weight: 600; margin-top: 3px; line-height: 1.45; }
+      .th-swatches { display: flex; gap: 6px; margin-top: 9px; }
+      .th-swatches i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22); }
+      .th-note { text-align: center; font-size: 11.5px; font-weight: 600; color: var(--text-3); margin: 18px 0 0; line-height: 1.5; }
+      #themeNavBtn .nav-badge { white-space: nowrap; max-width: 104px; overflow: hidden; text-overflow: ellipsis; font-size: 10px; padding: 2px 7px; }
     </style>
   </head>
   <body>
-    <div class="bg-fx" aria-hidden="true"></div>
+    <div class="bg-fx" aria-hidden="true"><canvas id="fxCanvas"></canvas></div>
+    <div id="themeVeil" aria-hidden="true"></div>
 
     <div id="app">
       <aside id="sidebar">
@@ -563,6 +763,7 @@
         <div class="nav-label">Studio</div>
         <button class="nav-btn" data-nav="eq"></button>
         <button class="nav-btn" data-nav="queue"></button>
+        <button class="nav-btn" id="themeNavBtn" aria-label="Change theme"></button>
         <div class="side-foot">
           <b>10-Band Equalizer</b>
           <p>Studio-grade processing. Ten bands, live spectrum, up to 200% clean gain.</p>
@@ -581,6 +782,7 @@
             </form>
             <div id="suggest" hidden></div>
           </div>
+          <button class="top-eq-chip" id="themeChip" aria-label="Change theme"><span data-icon="palette"></span><span class="lbl">Theme</span></button>
           <button class="top-eq-chip" id="eqChip" data-nav="eq"><span data-icon="sliders"></span><span class="lbl">Equalizer</span><span class="dot"></span></button>
         </header>
 
@@ -590,7 +792,7 @@
             <div class="hero">
               <span class="hero-apple" data-icon="apple" aria-hidden="true"></span>
               <h1 id="greeting">Good evening.<br /><span class="grad">Every song. One search.</span></h1>
-              <p>Bollywood, Punjabi, Lo-Fi, global hits — resolved in a blink, shaped by a 10-band studio EQ. Your move.</p>
+              <p id="heroSub">Bollywood, Punjabi, Lo-Fi, global hits — streamed from YouTube, the app system, resolved in a blink. Your move.</p>
               <div class="chip-row" id="quickChips"></div>
             </div>
             <div id="homeSections"></div>
@@ -632,6 +834,15 @@
           <!-- EQUALIZER -->
           <section class="view" id="view-eq">
             <div class="eq-shell" id="eqShell">
+              <div class="src-card">
+                <h2>Music Source</h2>
+                <p id="srcDesc"></p>
+                <div class="seg" id="srcSeg" role="radiogroup" aria-label="Music source">
+                  <button data-srcmode="youtube" role="radio" aria-checked="false">YouTube (App System)</button>
+                  <button data-srcmode="saavn" role="radio" aria-checked="false">JioSaavn</button>
+                  <button data-srcmode="auto" role="radio" aria-checked="true">Auto</button>
+                </div>
+              </div>
               <div class="eq-top">
                 <div>
                   <h1 style="font-family:var(--font-disp);font-size:clamp(23px,3.2vw,32px);font-weight:800;letter-spacing:0.015em;margin:6px 0 4px">Equalizer</h1>
@@ -642,6 +853,10 @@
               <div class="viz-wrap">
                 <canvas id="viz" width="900" height="92"></canvas>
                 <div class="viz-note"><span>LIVE SPECTRUM</span><span id="vizState">Play a song to wake the spectrum</span></div>
+              </div>
+              <div class="eq-yt-note" id="eqYtNote" hidden>
+                <b>EQ unavailable on YouTube source</b>
+                <span>The current track streams from YouTube, whose player can't pass audio through the equalizer or volume boost. Play a JioSaavn track to use them.</span>
               </div>
               <div class="preset-row" id="presetRow"></div>
               <div class="faders" id="faders"></div>
@@ -669,6 +884,7 @@
       <div class="pb-track">
         <img id="pbArt" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e11d2e'/%3E%3Cstop offset='.55' stop-color='%239c0d1a'/%3E%3Cstop offset='1' stop-color='%233d050a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='500' height='500' fill='url(%23g)'/%3E%3Cg fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' transform='translate(150,150) scale(8.4)'%3E%3Cpath d='M9 18.5V6.8c0-.5.34-.93.82-1.05l8-2A1.1 1.1 0 0 1 19.2 4.8v11.2'/%3E%3Ccircle cx='6.6' cy='18.5' r='2.6'/%3E%3Ccircle cx='16.8' cy='16' r='2.6'/%3E%3C/g%3E%3C/svg%3E" />
         <div class="pb-meta" id="pbMeta"><b id="pbTitle">Axlmusic Web</b><span id="pbArtist">Your move.</span></div>
+        <span class="src-badge" id="pbSrcBadge" hidden>YouTube</span>
         <button class="icon-btn" id="pbFav" aria-label="Like song"></button>
       </div>
       <div class="pb-center">
@@ -718,6 +934,7 @@
         <img class="np-art" id="npArt" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e11d2e'/%3E%3Cstop offset='.55' stop-color='%239c0d1a'/%3E%3Cstop offset='1' stop-color='%233d050a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='500' height='500' fill='url(%23g)'/%3E%3Cg fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' transform='translate(150,150) scale(8.4)'%3E%3Cpath d='M9 18.5V6.8c0-.5.34-.93.82-1.05l8-2A1.1 1.1 0 0 1 19.2 4.8v11.2'/%3E%3Ccircle cx='6.6' cy='18.5' r='2.6'/%3E%3Ccircle cx='16.8' cy='16' r='2.6'/%3E%3C/g%3E%3C/svg%3E" />
         <div class="np-meta">
           <div style="min-width:0"><h2 id="npTitle">—</h2><p id="npArtist">—</p></div>
+          <span class="src-badge" id="npSrcBadge" hidden>YouTube</span>
           <button class="np-fav" id="npFav" aria-label="Like song"></button>
         </div>
         <canvas id="npViz" width="640" height="54"></canvas>
@@ -743,7 +960,25 @@
       </div>
     </div>
 
+    <!-- THEME PICKER -->
+    <div id="themeSheet" hidden role="dialog" aria-modal="true" aria-label="Choose a theme">
+      <div class="th-backdrop" id="thBackdrop"></div>
+      <div class="th-panel">
+        <div class="th-grab" aria-hidden="true"></div>
+        <div class="th-head">
+          <div>
+            <h2>Themes</h2>
+            <p>One player, four worlds. Switching is instant — colors, type, glows and motion all change.</p>
+          </div>
+          <button class="th-close" id="thClose" aria-label="Close themes"><span data-icon="x"></span></button>
+        </div>
+        <div class="th-grid" id="thGrid"></div>
+        <p class="th-note">Palette &amp; mood tributes — every motif here is original artwork.</p>
+      </div>
+    </div>
+
     <div id="toasts" aria-live="polite"></div>
+    <div id="ytHolder" aria-hidden="true"><div id="ytPlayerEl"></div></div>
     <audio id="audio" crossorigin="anonymous" preload="auto"></audio>
     <script>
       "use strict";
@@ -771,7 +1006,12 @@
         volMute: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.6V5.4L7.5 9.5H4Z" fill="currentColor" stroke="none"/><path d="m15.5 9.5 5 5m0-5-5 5"/></svg>',
         trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M9.5 6V4.8A.8.8 0 0 1 10.3 4h3.4a.8.8 0 0 1 .8.8V6M6.5 6.5l.8 12a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-12"/></svg>',
         music: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 18.5V6.8c0-.5.34-.93.82-1.05l8-2A1.1 1.1 0 0 1 19.2 4.8v11.2"/><circle cx="6.6" cy="18.5" r="2.6"/><circle cx="16.8" cy="16" r="2.6"/></svg>',
-        apple: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.1 7.4c.2-2 1.5-3.5 3.4-4 .2 2-1.3 3.8-3.4 4Zm5.9 1.2c-1.2-.7-2.8-.6-4 .2-.6.3-1.4.3-2 0-1.2-.8-2.8-.9-4-.2-2.1 1.3-3.1 4.3-2.2 7.3.7 2.3 2.2 4.6 3.7 4.6.9 0 1.5-.5 2.5-.5s1.6.5 2.5.5c1.5 0 3-2.3 3.7-4.6.9-3-.1-6-2.2-7.3Z"/></svg>'
+        apple: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.1 7.4c.2-2 1.5-3.5 3.4-4 .2 2-1.3 3.8-3.4 4Zm5.9 1.2c-1.2-.7-2.8-.6-4 .2-.6.3-1.4.3-2 0-1.2-.8-2.8-.9-4-.2-2.1 1.3-3.1 4.3-2.2 7.3.7 2.3 2.2 4.6 3.7 4.6.9 0 1.5-.5 2.5-.5s1.6.5 2.5.5c1.5 0 3-2.3 3.7-4.6.9-3-.1-6-2.2-7.3Z"/></svg>',
+        palette: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.4 0 2-.9 2-1.9 0-.8-.6-1.3-.6-2.1 0-.9.7-1.5 1.7-1.5H17a3.5 3.5 0 0 0 3.5-3.5C20.5 7 16.6 3.5 12 3.5Z"/><circle cx="7.6" cy="10.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="11" cy="7.2" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.2" cy="8.6" r="1.15" fill="currentColor" stroke="none"/><circle cx="7.9" cy="14.8" r="1.15" fill="currentColor" stroke="none"/></svg>',
+        spiral: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 12a2 2 0 0 1 2 2 3.5 3.5 0 0 1-3.5-3.5A5.5 5.5 0 0 1 16 16a8 8 0 0 1-8-8 10.5 10.5 0 0 1 10.5 10.5"/></svg>',
+        torii: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3.5 5.2h17M5.8 5.2c2 1.1 4 1.6 6.2 1.6s4.2-.5 6.2-1.6M6.8 9.6h10.4M8.8 9.6V20M15.2 9.6V20"/></svg>',
+        flame: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8c.9 3.4-.5 5.1-2 6.6C8.6 10.8 7.9 12.3 7.9 14a4.6 4.6 0 0 0 9.2 0c0-1.3-.4-2.4-1.1-3.4-.3 1-.9 1.8-1.8 2.3.4-3-.5-6.7-2.2-10.1Z"/></svg>',
+        check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>'
       };
       const NAV = {
         home: { icon: "home", label: "Home" },
@@ -866,6 +1106,128 @@
         };
       }
       const normSongs = (list) => (list || []).map(normSong).filter(Boolean);
+
+      /* ============================== music source ==============================
+         Two engines behind one player UI:
+         - YouTube — the same system as the Axlmusic Android app. Playback runs
+           through the official YouTube IFrame Player API (hidden player, no
+           API keys, no cookies); search uses public Invidious instances
+           (flokinet primary) with a fallback chain, then JioSaavn.
+         - JioSaavn — direct audio files through the <audio> element + Web
+           Audio graph, which is what makes the 10-band EQ and volume boost
+           possible. YouTube audio can never enter that graph (browser security:
+           the iframe is a separate media pipeline), so on YouTube tracks the
+           EQ honestly reports itself unavailable instead of faking it.
+         Mode "auto" (default): YouTube first, JioSaavn steps in automatically
+         whenever a YouTube search or stream fails. */
+      const LS_SOURCE = "axlmusic_source";
+      let sourceMode = "auto";
+      try { const m = localStorage.getItem(LS_SOURCE); if (m === "youtube" || m === "saavn" || m === "auto") sourceMode = m; } catch (e) {}
+      const isYtTrack = (t) => !!(t && t.source === "yt");
+
+      function fetchJson(url, timeoutMs) {
+        return new Promise((resolve, reject) => {
+          const ctl = new AbortController();
+          const to = setTimeout(() => ctl.abort(), timeoutMs || 7000);
+          fetch(url, { signal: ctl.signal })
+            .then((res) => { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+            .then((j) => { clearTimeout(to); resolve(j); })
+            .catch((e) => { clearTimeout(to); reject(e); });
+        });
+      }
+      function normYtVideo(videoId, title, author, seconds) {
+        if (!videoId || !title) return null;
+        seconds = Number(seconds) || 0;
+        if (seconds < 20 || seconds > 1500) return null; /* songs only — no livestreams, mixes or podcasts */
+        return {
+          id: "yt:" + videoId, ytId: videoId, source: "yt",
+          title: entityDecode(title),
+          artist: entityDecode(author || "").replace(/\s*-\s*Topic$/, "") || "YouTube",
+          album: "YouTube",
+          duration: seconds,
+          img: "https://i.ytimg.com/vi/" + videoId + "/hqdefault.jpg",
+          imgSm: "https://i.ytimg.com/vi/" + videoId + "/mqdefault.jpg",
+          src: "", srcLow: "", quality: ""
+        };
+      }
+      /* Invidious search chain — the old Invidious/Piped mirror list died
+         (401/403/502/timeouts, network-verified 2026-10-18). Primary is
+         invidious.flokinet.to (verified working 2026-10-18: real video IDs,
+         CORS open). Public instances die often, so the backups below are
+         plain base URLs — swap in fresh ones from the public instance list
+         without touching the logic. If every instance fails, ytSearchSongs
+         returns [] and the callers fall back to JioSaavn search. */
+      const YT_INVIDIOUS = [
+        "https://invidious.flokinet.to",
+        "https://inv.nadeko.net",
+        "https://invidious.nerdvpn.de",
+        "https://yt.cdaut.de"
+      ];
+      function invThumb(thumbs, qualities, base) {
+        if (!Array.isArray(thumbs)) return "";
+        for (const q of qualities) {
+          const t = thumbs.find((x) => x && x.quality === q && x.url);
+          if (t) return t.url.charAt(0) === "/" ? base + t.url : t.url;
+        }
+        return "";
+      }
+      function parseInvidious(json, base) {
+        return (Array.isArray(json) ? json : [])
+          .filter((v) => v && v.type === "video" && !v.liveNow)
+          .map((v) => {
+            const t = normYtVideo(v.videoId, v.title, v.author, v.lengthSeconds);
+            if (t) {
+              const hi = invThumb(v.videoThumbnails, ["sddefault", "high", "medium"], base);
+              const md = invThumb(v.videoThumbnails, ["medium", "default"], base);
+              if (hi) t.img = hi;
+              if (md) t.imgSm = md;
+            }
+            return t;
+          }).filter(Boolean);
+      }
+      async function ytSearchSongs(q, limit) {
+        const enc = encodeURIComponent(q);
+        for (const base of YT_INVIDIOUS) {
+          try {
+            const json = await fetchJson(base + "/api/v1/search?q=" + enc + "&type=video", 7000);
+            const songs = parseInvidious(json, base).slice(0, limit || 20);
+            if (songs.length) return songs;
+          } catch (e) { /* fall through to the next instance */ }
+        }
+        return [];
+      }
+      /* source picker — lives in the Equalizer (studio) view */
+      const SRC_DESCS = {
+        youtube: "Songs stream from YouTube — the same system as the Axlmusic Android app. YouTube audio can't pass through the EQ or volume boost, so those apply to JioSaavn tracks only.",
+        saavn: "Songs stream from JioSaavn as direct audio files — the full 10-band EQ and volume boost apply to every track.",
+        auto: "YouTube first — the app system. If a song can't be found or played on YouTube, Axlmusic switches to JioSaavn automatically."
+      };
+      const HERO_SUBS = {
+        youtube: "Bollywood, Punjabi, Lo-Fi, global hits — streamed from YouTube, the app system, resolved in a blink. Your move.",
+        saavn: "Bollywood, Punjabi, Lo-Fi, global hits — streamed from JioSaavn, shaped by a 10-band studio EQ. Your move.",
+        auto: "Bollywood, Punjabi, Lo-Fi, global hits — YouTube streaming like the app, JioSaavn in reserve, resolved in a blink. Your move."
+      };
+      function syncSrcSeg() {
+        $$("#srcSeg [data-srcmode]").forEach((b) => {
+          const on = b.dataset.srcmode === sourceMode;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-checked", String(on));
+        });
+        const d = $("#srcDesc");
+        if (d) d.textContent = SRC_DESCS[sourceMode];
+        const hs = $("#heroSub");
+        if (hs) hs.textContent = HERO_SUBS[sourceMode];
+      }
+      $$("#srcSeg [data-srcmode]").forEach((b) => b.addEventListener("click", () => {
+        if (sourceMode === b.dataset.srcmode) return;
+        sourceMode = b.dataset.srcmode;
+        try { localStorage.setItem(LS_SOURCE, sourceMode); } catch (e) {}
+        suggestCache.clear();
+        syncSrcSeg();
+        toast("Music source — " + b.textContent.trim());
+        if (S.searchQ) runSearch(S.searchQ, true);
+      }));
+      syncSrcSeg();
 
       /* ============================== state ============================== */
       const S = {
@@ -1010,7 +1372,7 @@
       let freqData = null;
       function sampleInto(arr, count, t) {
         let live = false;
-        if (analyser && S.playing) {
+        if (analyser && S.playing && !curIsYt()) {
           if (!freqData || freqData.length !== analyser.frequencyBinCount) freqData = new Uint8Array(analyser.frequencyBinCount);
           analyser.getByteFrequencyData(freqData);
           live = true;
@@ -1023,11 +1385,23 @@
           arr[i] += (target - arr[i]) * k;
         }
       }
+      /* visualizer colors follow the active theme — read from the live CSS tokens */
+      function themeRGB() {
+        const cs = getComputedStyle(document.documentElement);
+        const parse = (v, fb) => { const p = String(v || "").split(",").map((x) => parseInt(x, 10)); return p.length === 3 && p.every((n) => isFinite(n)) ? p : fb; };
+        return {
+          acc: parse(cs.getPropertyValue("--acc-rgb"), [225, 29, 46]),
+          hi: parse(cs.getPropertyValue("--acc-hi-rgb"), [255, 59, 77]),
+          deep: parse(cs.getPropertyValue("--acc-deep-rgb"), [138, 14, 26])
+        };
+      }
+      const rgbaOf = (c, a) => "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")";
       function drawBars(ctx, w, h, arr) {
         const count = arr.length;
         ctx.clearRect(0, 0, w, h);
+        const T = themeRGB();
         const grad = ctx.createLinearGradient(0, h, 0, 0);
-        grad.addColorStop(0, "#8a0e1a"); grad.addColorStop(0.55, "#e11d2e"); grad.addColorStop(1, "#ff5a3c");
+        grad.addColorStop(0, rgbaOf(T.deep, 1)); grad.addColorStop(0.55, rgbaOf(T.acc, 1)); grad.addColorStop(1, rgbaOf(T.hi, 1));
         ctx.fillStyle = grad;
         const bw = w / count;
         for (let i = 0; i < count; i++) {
@@ -1045,8 +1419,9 @@
         for (let i = 0; i < count; i++) {
           pts.push({ x: (i / (count - 1)) * w, y: h - 4 - arr[i] * (h - 10) });
         }
+        const T = themeRGB();
         const grad = ctx.createLinearGradient(0, h, 0, 0);
-        grad.addColorStop(0, "rgba(138,14,26,0.05)"); grad.addColorStop(0.6, "rgba(225,29,46,0.34)"); grad.addColorStop(1, "rgba(255,90,60,0.55)");
+        grad.addColorStop(0, rgbaOf(T.deep, 0.05)); grad.addColorStop(0.6, rgbaOf(T.acc, 0.34)); grad.addColorStop(1, rgbaOf(T.hi, 0.55));
         ctx.beginPath();
         ctx.moveTo(0, h);
         ctx.lineTo(pts[0].x, pts[0].y);
@@ -1067,7 +1442,7 @@
           ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
         }
         ctx.lineTo(pts[count - 1].x, pts[count - 1].y);
-        ctx.strokeStyle = "rgba(255,120,110,0.9)";
+        ctx.strokeStyle = rgbaOf(T.hi, 0.9);
         ctx.lineWidth = 1.6;
         ctx.stroke();
       }
@@ -1077,7 +1452,7 @@
         if (S.view === "eq" && $("#view-eq").classList.contains("active")) { sampleInto(smoothEq, smoothEq.length, now); drawBars(vizCtx, viz.width, viz.height, smoothEq); }
         if ($("#nowplaying").classList.contains("open")) { sampleInto(smoothNp, smoothNp.length, now); drawWave(npCtx, npViz.width, npViz.height, smoothNp); }
         const vs = $("#vizState");
-        if (vs) vs.textContent = !current() ? "Play a song to wake the spectrum" : S.playing ? "Live — " + (eqOn ? activePreset + " preset" : "EQ off") : "Paused";
+        if (vs) vs.textContent = !current() ? "Play a song to wake the spectrum" : curIsYt() ? "YouTube source — EQ unavailable" : S.playing ? "Live — " + (eqOn ? activePreset + " preset" : "EQ off") : "Paused";
       })(0);
 
       /* ============================== rendering ============================== */
@@ -1271,13 +1646,17 @@
       async function showSuggestions(q) {
         const seq = ++sgSeq;
         const key = q.toLowerCase();
-        let songs = suggestCache.get(key);
+        const ckey = sourceMode + "|" + key;
+        let songs = suggestCache.get(ckey);
         if (!songs) {
           try {
-            const data = await api("/search/songs?query=" + encodeURIComponent(q) + "&page=0&limit=6", 9000);
-            songs = normSongs(data.results || []);
+            if (sourceMode !== "saavn") songs = await ytSearchSongs(q, 6);
+            if (!songs || !songs.length) {
+              const data = await api("/search/songs?query=" + encodeURIComponent(q) + "&page=0&limit=6", 9000);
+              songs = normSongs(data.results || []);
+            }
             if (suggestCache.size > 40) suggestCache.clear();
-            suggestCache.set(key, songs);
+            suggestCache.set(ckey, songs);
           } catch (e) { return; }
         }
         if (seq !== sgSeq || document.activeElement !== searchInput) return;
@@ -1371,6 +1750,26 @@
         $("#loadMore").style.display = "none";
         try {
           const limit = tab === "songs" ? 20 : 24;
+          /* YouTube is the primary source (the app system): in Auto and YouTube
+             modes the Songs tab answers from YouTube first; an empty or failed
+             YouTube search falls through to JioSaavn below. Playlists / Albums
+             tabs always come from JioSaavn collections. */
+          if (tab === "songs" && !append && sourceMode !== "saavn") {
+            const ytSongs = await ytSearchSongs(q, 24);
+            if (tab !== S.searchTab || q !== S.searchQ) return;
+            if (ytSongs.length) {
+              S.searchPage = 0;
+              S.searchTotal = ytSongs.length;
+              $("#searchCount").textContent = ytSongs.length + " from YouTube";
+              S._searchSongs = ytSongs;
+              renderTrackList(box, ytSongs, {
+                emptyHtml: '<div class="empty"><b>Nothing found</b><p>No track by that name — yet. Try the artist, or one word from the title.</p></div>',
+                onPlay: (t, i) => playFromList(S._searchSongs, i)
+              });
+              $("#loadMore").style.display = "none";
+              return;
+            }
+          }
           const data = await fetchSearchSmart(tab, q, page, limit);
           if (tab !== S.searchTab || q !== S.searchQ) return;
           S.searchPage = page;
@@ -1505,12 +1904,167 @@
         }
         prefetchNext();
         markNowRows();
+        syncSourceUI();
       }
       $("#clearQueue").addEventListener("click", () => {
         const cur = current();
         S.queue = cur ? [cur] : []; S.idx = cur ? 0 : -1;
         refreshQueueUI(); toast("Queue cleared");
       });
+
+      /* ============================== YouTube engine ==============================
+         The official IFrame Player API drives a player parked far off-screen;
+         the app's own transport, seek bar and Media Session stay in charge and
+         sync from the player's state events plus a position ticker. */
+      let ytPlayer = null, ytApiState = "idle"; /* idle | loading | ready | failed */
+      let ytPending = null; /* { track, autoplay } waiting for the API */
+      let ytPos = 0, ytDur = 0, ytTicker = null;
+      const curIsYt = () => isYtTrack(current());
+
+      function loadYtApi() {
+        if (ytApiState === "loading" || ytApiState === "ready") return;
+        ytApiState = "loading";
+        const prevReady = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = function () {
+          if (typeof prevReady === "function") { try { prevReady(); } catch (e) {} }
+          createYtPlayer();
+        };
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        tag.onerror = () => { if (ytApiState === "loading") { ytApiState = "failed"; ytPendingFail(); } };
+        document.head.appendChild(tag);
+        setTimeout(() => { if (ytApiState === "loading") { ytApiState = "failed"; ytPendingFail(); } }, 10000);
+      }
+      function createYtPlayer() {
+        try {
+          ytPlayer = new YT.Player("ytPlayerEl", {
+            width: "320", height: "180",
+            playerVars: { autoplay: 0, controls: 0, disablekb: 1, playsinline: 1, rel: 0, modestbranding: 1, iv_load_policy: 3 },
+            events: { onReady: onYtReady, onStateChange: onYtState, onError: onYtError }
+          });
+        } catch (e) { ytApiState = "failed"; ytPendingFail(); }
+      }
+      function onYtReady() {
+        ytApiState = "ready";
+        try { ytPlayer.setVolume(Math.round((audio.volume || 0.85) * 100)); if (audio.muted) ytPlayer.mute(); } catch (e) {}
+        if (ytPending) { const p = ytPending; ytPending = null; ytLoad(p.track, p.autoplay); }
+      }
+      function ytPendingFail() {
+        const p = ytPending; ytPending = null;
+        if (p && current() === p.track) { toast("YouTube unavailable — switching to JioSaavn"); ytFallback(p.track); }
+      }
+      function ytLoad(track, autoplay) {
+        ytPos = 0; ytDur = track.duration || 0;
+        if (!ytPlayer || ytApiState !== "ready") {
+          if (ytApiState === "failed") { toast("YouTube unavailable — switching to JioSaavn"); ytFallback(track); return; }
+          ytPending = { track: track, autoplay: autoplay };
+          loadYtApi();
+          return;
+        }
+        try {
+          if (autoplay) ytPlayer.loadVideoById(track.ytId);
+          else ytPlayer.cueVideoById(track.ytId);
+        } catch (e) { ytFallback(track); return; }
+        ytStartTicker();
+      }
+      function ytStartTicker() {
+        if (ytTicker) return;
+        ytTicker = setInterval(() => {
+          if (!ytPlayer || !curIsYt()) return;
+          try {
+            const d = ytPlayer.getDuration();
+            if (d && isFinite(d)) ytDur = d;
+            ytPos = ytPlayer.getCurrentTime() || 0;
+          } catch (e) {}
+          syncSeek();
+        }, 300);
+      }
+      function onYtState(e) {
+        if (!curIsYt() || !window.YT || !YT.PlayerState) return;
+        const st = YT.PlayerState;
+        if (e.data === st.PLAYING) { S.playing = true; S.loading = false; syncTransport(); markNowRows(); syncMediaState(); ytStartTicker(); }
+        else if (e.data === st.PAUSED) { S.playing = false; S.loading = false; syncTransport(); markNowRows(); syncMediaState(); }
+        else if (e.data === st.BUFFERING) { S.loading = true; syncTransport(); }
+        else if (e.data === st.ENDED) { S.playing = false; syncTransport(); next(true); syncMediaState(); }
+      }
+      function onYtError() {
+        const t = current();
+        if (!isYtTrack(t)) return;
+        S.loading = false;
+        toast("YouTube can't play this one — trying JioSaavn");
+        ytFallback(t);
+      }
+      /* YouTube failed for this track: find the same song on JioSaavn and swap
+         it into the queue slot, so playback never dead-ends. */
+      async function ytFallback(t) {
+        if (!t || t._fbTried) {
+          S.loading = false; S.playing = false; syncTransport();
+          toast("This track could not play — moving on");
+          setTimeout(() => next(false), 600);
+          return;
+        }
+        t._fbTried = true;
+        const idx = S.queue.indexOf(t);
+        try {
+          const queries = [t.title + " " + t.artist, t.title];
+          for (const q of queries) {
+            const data = await api("/search/songs?query=" + encodeURIComponent(q) + "&page=0&limit=5", 9000);
+            const alt = normSongs(data.results || [])[0];
+            if (alt) {
+              if (idx >= 0) S.queue[idx] = alt;
+              toast("Playing from JioSaavn — " + alt.title);
+              loadTrack(true); refreshQueueUI();
+              return;
+            }
+          }
+        } catch (e) {}
+        S.loading = false; S.playing = false; syncTransport();
+        toast("This track could not play — moving on");
+        setTimeout(() => next(false), 600);
+      }
+      function ytStop() {
+        ytPending = null;
+        if (ytPlayer && ytApiState === "ready") { try { ytPlayer.pauseVideo(); } catch (e) {} }
+      }
+      /* unified transport — every control talks to whichever engine owns the
+         current track */
+      function engPlay() {
+        if (curIsYt()) {
+          if (ytPlayer && ytApiState === "ready") { try { ytPlayer.playVideo(); } catch (e) {} }
+          else { const t = current(); if (t) ytLoad(t, true); }
+        } else { const p = audio.play(); if (p) p.catch(() => {}); }
+      }
+      function engPause() {
+        if (curIsYt()) { if (ytPlayer) { try { ytPlayer.pauseVideo(); } catch (e) {} } }
+        else audio.pause();
+      }
+      function engSeek(sec) {
+        sec = Math.max(0, sec || 0);
+        if (curIsYt()) {
+          ytPos = sec;
+          if (ytPlayer && ytApiState === "ready") { try { ytPlayer.seekTo(sec, true); } catch (e) {} }
+        } else audio.currentTime = sec;
+      }
+      function engPos() { return curIsYt() ? ytPos : (audio.currentTime || 0); }
+      function engDur() {
+        const t = current();
+        if (curIsYt()) return ytDur || (t ? t.duration : 0) || 0;
+        return audio.duration || (t ? t.duration : 0) || 0;
+      }
+      /* source badges + the honest EQ note follow the current track */
+      function syncSourceUI() {
+        const t = current();
+        const yt = isYtTrack(t);
+        ["#pbSrcBadge", "#npSrcBadge"].forEach((sel) => {
+          const b = $(sel);
+          if (!b) return;
+          b.hidden = !t;
+          b.textContent = yt ? "YouTube" : "JioSaavn";
+          b.classList.toggle("saavn", !yt);
+        });
+        const note = $("#eqYtNote");
+        if (note) note.hidden = !yt;
+      }
 
       /* ============================== player engine ============================== */
       /* Prefetch pipeline: two silent Audio elements keep the browser's media
@@ -1546,22 +2100,30 @@
       function loadTrack(autoplay) {
         const t = current();
         if (!t) return;
-        ensureGraph();
         /* Optimistic UI: the transport flips to "playing" the instant of the tap;
            the stream catches up behind the mini loading ring on the play button. */
         S.loading = true;
         if (autoplay) S.playing = true;
         syncTransport();
-        audio.src = t.src;
-        audio.playbackRate = 1;
-        if (autoplay) {
-          const p = audio.play();
-          if (p) p.catch(() => {
-            if (audio.src !== t.srcLow && t.srcLow) {
-              audio.src = t.srcLow;
-              audio.play().catch(() => { S.playing = false; syncTransport(); toast("This track could not play"); });
-            } else { S.playing = false; syncTransport(); toast("This track could not play"); }
-          });
+        if (isYtTrack(t)) {
+          /* YouTube track: the <audio> element (and its EQ graph) steps aside;
+             the hidden IFrame player owns playback. */
+          try { audio.pause(); } catch (e) {}
+          ytLoad(t, autoplay);
+        } else {
+          ytStop();
+          ensureGraph();
+          audio.src = t.src;
+          audio.playbackRate = 1;
+          if (autoplay) {
+            const p = audio.play();
+            if (p) p.catch(() => {
+              if (audio.src !== t.srcLow && t.srcLow) {
+                audio.src = t.srcLow;
+                audio.play().catch(() => { S.playing = false; syncTransport(); toast("This track could not play"); });
+              } else { S.playing = false; syncTransport(); toast("This track could not play"); }
+            });
+          }
         }
         updatePlayerUI(); refreshQueueUI(); prefetchNext();
         if ("mediaSession" in navigator) {
@@ -1578,13 +2140,18 @@
       }
       function togglePlay() {
         if (!current()) { toast("Choose a song first"); return; }
+        if (curIsYt()) {
+          if (S.playing) engPause();
+          else { S.playing = true; syncTransport(); engPlay(); }
+          return;
+        }
         ensureGraph();
         if (audio.paused) { S.playing = true; syncTransport(); audio.play().catch(() => { S.playing = false; syncTransport(); toast("Playback failed — tap again"); }); }
         else audio.pause();
       }
       function next(auto) {
         if (!S.queue.length) return;
-        if (auto && S.repeat === 2) { audio.currentTime = 0; audio.play().catch(() => {}); return; }
+        if (auto && S.repeat === 2) { engSeek(0); engPlay(); return; }
         if (S.idx >= 0) S.history.push(S.idx);
         if (S.shuffle && S.queue.length > 1) {
           let n = S.idx;
@@ -1597,20 +2164,22 @@
       }
       function prev() {
         if (!S.queue.length) return;
-        if (audio.currentTime > 4) { audio.currentTime = 0; return; }
+        if (engPos() > 4) { engSeek(0); return; }
         if (S.history.length) S.idx = S.history.pop();
         else if (S.idx > 0) S.idx--;
         else S.idx = S.queue.length - 1;
         loadTrack(true); refreshQueueUI();
       }
-      audio.addEventListener("play", () => { S.playing = true; S.loading = false; syncTransport(); markNowRows(); syncMediaState(); resumeCtx(); });
-      audio.addEventListener("pause", () => { S.playing = false; syncTransport(); markNowRows(); syncMediaState(); });
-      audio.addEventListener("waiting", () => { S.loading = true; syncTransport(); });
-      audio.addEventListener("playing", () => { S.loading = false; syncTransport(); resumeCtx(); const t = current(); if (t) setCachedStream(t); prefetchNext(); });
-      audio.addEventListener("ended", () => { next(true); syncMediaState(); });
+      /* the <audio> element only owns JioSaavn tracks — when a YouTube track is
+         current, its events are stale noise and must not touch transport state */
+      audio.addEventListener("play", () => { if (curIsYt()) return; S.playing = true; S.loading = false; syncTransport(); markNowRows(); syncMediaState(); resumeCtx(); });
+      audio.addEventListener("pause", () => { if (curIsYt()) return; S.playing = false; syncTransport(); markNowRows(); syncMediaState(); });
+      audio.addEventListener("waiting", () => { if (curIsYt()) return; S.loading = true; syncTransport(); });
+      audio.addEventListener("playing", () => { if (curIsYt()) return; S.loading = false; syncTransport(); resumeCtx(); const t = current(); if (t) setCachedStream(t); prefetchNext(); });
+      audio.addEventListener("ended", () => { if (curIsYt()) return; next(true); syncMediaState(); });
       audio.addEventListener("error", async () => {
         const t = current();
-        if (!t) return;
+        if (!t || isYtTrack(t)) return;
         if (!t._triedLow && audio.src !== t.srcLow && t.srcLow) {
           t._triedLow = true;
           audio.src = t.srcLow; audio.play().catch(() => {});
@@ -1642,8 +2211,8 @@
            background tab / locked screen on Android Chrome — so a context the OS
            suspended mid-song gets revived here without any user interaction. */
         if (AC && AC.state !== "running" && !audio.paused) resumeCtx();
-        const d = audio.duration || (current() ? current().duration : 0);
-        const c = audio.currentTime || 0;
+        const d = engDur();
+        const c = engPos();
         const pct = d ? (c / d) * 1000 : 0;
         [$("#seek"), $("#npSeek")].forEach((s) => { if (s && document.activeElement !== s) { s.value = pct; s.style.setProperty("--fill", (d ? (c / d) * 100 : 0) + "%"); } });
         $("#tCur").textContent = fmtTime(c); $("#tDur").textContent = fmtTime(d);
@@ -1654,13 +2223,13 @@
       }
       function bindSeek(el) {
         el.addEventListener("input", () => {
-          const d = audio.duration || 0;
+          const d = engDur();
           el.style.setProperty("--fill", (el.value / 10) + "%");
           if (d) { const t = (el.value / 1000) * d; $("#tCur").textContent = fmtTime(t); $("#npCur").textContent = fmtTime(t); }
         });
         el.addEventListener("change", () => {
-          const d = audio.duration || 0;
-          if (d) audio.currentTime = (el.value / 1000) * d;
+          const d = engDur();
+          if (d) engSeek((el.value / 1000) * d);
         });
       }
       bindSeek($("#seek")); bindSeek($("#npSeek"));
@@ -1675,6 +2244,7 @@
         $("#npTitle").textContent = t.title; $("#npArtist").textContent = t.artist + (t.album ? " · " + t.album : "");
         document.title = t.title + " · " + t.artist + " — Axlmusic Web";
         syncFavButtons();
+        syncSourceUI();
       }
       function syncFavButtons() {
         const t = current();
@@ -1768,8 +2338,8 @@
         volEl.style.setProperty("--fill", volEl.value + "%");
         $("#btnMute").innerHTML = audio.muted || Number(volEl.value) === 0 ? ICONS.volMute : ICONS.vol;
       }
-      volEl.addEventListener("input", () => { audio.volume = volEl.value / 100; audio.muted = false; syncVol(); });
-      $("#btnMute").innerHTML = ICONS.vol; $("#btnMute").addEventListener("click", () => { audio.muted = !audio.muted; syncVol(); });
+      volEl.addEventListener("input", () => { audio.volume = volEl.value / 100; audio.muted = false; if (ytPlayer && ytApiState === "ready") { try { ytPlayer.setVolume(Number(volEl.value)); ytPlayer.unMute(); } catch (e) {} } syncVol(); });
+      $("#btnMute").innerHTML = ICONS.vol; $("#btnMute").addEventListener("click", () => { audio.muted = !audio.muted; if (ytPlayer && ytApiState === "ready") { try { if (audio.muted) ytPlayer.mute(); else ytPlayer.unMute(); } catch (e) {} } syncVol(); });
       syncVol(); syncTransport();
       $("#btnShuffle").innerHTML = ICONS.shuffle; $("#npShuffle").innerHTML = ICONS.shuffle;
       $("#btnPrev").innerHTML = ICONS.prev; $("#npPrev").innerHTML = ICONS.prev;
@@ -1790,17 +2360,17 @@
       }
       if ("mediaSession" in navigator) {
         const msSet = (action, fn) => { try { navigator.mediaSession.setActionHandler(action, fn); } catch (e) {} };
-        msSet("play", () => { resumeCtx(); audio.play().catch(() => {}); });
-        msSet("pause", () => audio.pause());
-        msSet("stop", () => { audio.pause(); });
+        msSet("play", () => { resumeCtx(); if (curIsYt()) { S.playing = true; syncTransport(); } engPlay(); });
+        msSet("pause", () => engPause());
+        msSet("stop", () => engPause());
         msSet("nexttrack", () => next(false));
         msSet("previoustrack", prev);
-        msSet("seekbackward", (d) => { audio.currentTime = Math.max(0, audio.currentTime - (d.seekOffset || 10)); });
-        msSet("seekforward", (d) => { const dur = audio.duration || 0; audio.currentTime = Math.min(dur, audio.currentTime + (d.seekOffset || 10)); });
+        msSet("seekbackward", (d) => engSeek(Math.max(0, engPos() - (d.seekOffset || 10))));
+        msSet("seekforward", (d) => engSeek(Math.min(engDur(), engPos() + (d.seekOffset || 10))));
         msSet("seekto", (d) => {
           if (d.seekTime == null) return;
-          if (d.fastSeek && typeof audio.fastSeek === "function") audio.fastSeek(d.seekTime);
-          else audio.currentTime = d.seekTime;
+          if (!curIsYt() && d.fastSeek && typeof audio.fastSeek === "function") audio.fastSeek(d.seekTime);
+          else engSeek(d.seekTime);
         });
       }
       /* Revive the EQ context the moment the page becomes visible / unfrozen /
@@ -1816,14 +2386,186 @@
         const tag = (e.target.tagName || "").toLowerCase();
         if (tag === "input" || tag === "textarea" || tag === "button") return;
         if (e.code === "Space") { e.preventDefault(); togglePlay(); }
-        else if (e.code === "ArrowRight") audio.currentTime = Math.min((audio.duration || 0), audio.currentTime + 10);
-        else if (e.code === "ArrowLeft") audio.currentTime = Math.max(0, audio.currentTime - 10);
+        else if (e.code === "ArrowRight") engSeek(Math.min(engDur(), engPos() + 10));
+        else if (e.code === "ArrowLeft") engSeek(Math.max(0, engPos() - 10));
         else if (e.code === "Escape") closeNP();
       });
 
+      /* ============================== THEME SYSTEM ==============================
+         Four inspired worlds. Each theme is a full token set on <html data-theme>:
+         accent + ink RGB, backgrounds, display font, paper texture, bg wash,
+         shimmer and particle behaviour all swap together, crossfaded by a veil.
+         All artwork is original — palettes and moods only. */
+      const THEMES = [
+        {
+          id: "deathnote", name: "Death Note", tag: "Gothic notebook — bone white, blood red, shinigami glow",
+          motif: "apple", font: "'Cinzel', serif", tt: "none",
+          bg: "#08080a", bg2: "#0d0d10", ink: "#f3eee2", acc: "#e11d2e", hi: "#ff3b4d", deep: "#8a0e1a",
+          rgb: "225, 29, 46",
+          grad: "linear-gradient(135deg, #ff3b4d 0%, #e11d2e 48%, #8a0e1a 100%)",
+          soft: "rgba(225, 29, 46, 0.2)", line: "rgba(243, 238, 226, 0.16)", sw: ["#e11d2e", "#f3eee2", "#08080a"],
+          particles: { count: 24, colors: ["243,238,226", "225,29,46"], mode: "rise", sp: [0.08, 0.3], size: [0.8, 2.1], alpha: 0.34, wind: 0.05 }
+        },
+        {
+          id: "ninja", name: "Ninja Storm", tag: "Naruto-inspired — explosive orange, storm grey, speed lines",
+          motif: "spiral", font: "'Anton', sans-serif", tt: "uppercase",
+          bg: "#070503", bg2: "#0f0a05", ink: "#f8f3ea", acc: "#ff7b00", hi: "#ffa940", deep: "#9a4a00",
+          rgb: "255, 123, 0",
+          grad: "linear-gradient(135deg, #ffa940 0%, #ff7b00 48%, #9a4a00 100%)",
+          soft: "rgba(255, 123, 0, 0.22)", line: "rgba(246, 240, 231, 0.16)", sw: ["#ff7b00", "#7d8590", "#070503"],
+          particles: { count: 34, colors: ["255,123,0", "255,169,64", "255,214,150"], mode: "rise", sp: [0.5, 1.5], size: [0.8, 2.2], alpha: 0.55, wind: 0.35 }
+        },
+        {
+          id: "cursed", name: "Cursed Energy", tag: "Jujutsu Kaisen-inspired — midnight indigo, electric violet, cursed red",
+          motif: "torii", font: "'Michroma', sans-serif", tt: "uppercase",
+          bg: "#0d0d1a", bg2: "#12122b", ink: "#efedff", acc: "#7c3aed", hi: "#a78bfa", deep: "#4c1d95",
+          rgb: "124, 58, 237",
+          grad: "linear-gradient(135deg, #c084fc 0%, #7c3aed 46%, #dc2626 125%)",
+          soft: "rgba(124, 58, 237, 0.24)", line: "rgba(233, 231, 255, 0.16)", sw: ["#7c3aed", "#dc2626", "#0d0d1a"],
+          particles: { count: 30, colors: ["124,58,237", "167,139,250", "220,38,38"], mode: "rise", sp: [0.12, 0.45], size: [1.2, 3.4], alpha: 0.5, wind: 0.12 }
+        },
+        {
+          id: "doomsday", name: "Doomsday", tag: "Aftermath — charred black, ember orange, drifting ash & smoke",
+          motif: "flame", font: "'Black Ops One', sans-serif", tt: "uppercase",
+          bg: "#0a0705", bg2: "#130c06", ink: "#f4eee1", acc: "#ff4500", hi: "#ff7a29", deep: "#8f2600",
+          rgb: "255, 69, 0",
+          grad: "linear-gradient(135deg, #ff7a29 0%, #ff4500 48%, #8f2600 100%)",
+          soft: "rgba(255, 69, 0, 0.22)", line: "rgba(240, 232, 219, 0.15)", sw: ["#ff4500", "#9a958c", "#0a0705"],
+          particles: { count: 38, colors: ["255,69,0", "255,122,41", "255,180,84", "168,162,152"], mode: "rise", sp: [0.25, 0.9], size: [0.8, 2.6], alpha: 0.6, wind: 0.2, flicker: true }
+        }
+      ];
+      const themeById = (id) => THEMES.find((t) => t.id === id) || THEMES[0];
+      let curTheme = themeById(document.documentElement.dataset.theme || "deathnote").id;
+
+      function makePlaceholder(t) {
+        const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='500' height='500'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='" + t.hi + "'/><stop offset='.55' stop-color='" + t.acc + "'/><stop offset='1' stop-color='" + t.deep + "'/></linearGradient></defs><rect width='500' height='500' fill='url(#g)'/><g fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' transform='translate(150,150) scale(8.4)'><path d='M9 18.5V6.8c0-.5.34-.93.82-1.05l8-2A1.1 1.1 0 0 1 19.2 4.8v11.2'/><circle cx='6.6' cy='18.5' r='2.6'/><circle cx='16.8' cy='16' r='2.6'/></g></svg>";
+        return "data:image/svg+xml," + svg.replace(/#/g, "%23");
+      }
+
+      /* ambient particle field — behaviour (sparks / cursed wisps / embers / dust) is per theme */
+      const fxC = $("#fxCanvas"), fxX = fxC.getContext("2d");
+      let fxParts = [], fxCfg = THEMES[0].particles;
+      const fxReduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function fxResize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+        fxC.width = Math.floor(innerWidth * dpr); fxC.height = Math.floor(innerHeight * dpr);
+      }
+      function fxSeed() {
+        fxParts = [];
+        const n = Math.round(fxCfg.count * (innerWidth < 700 ? 0.55 : 1));
+        for (let i = 0; i < n; i++) fxParts.push(fxNew(true));
+      }
+      function fxNew(anywhere) {
+        return {
+          x: Math.random() * fxC.width,
+          y: anywhere ? Math.random() * fxC.height : fxC.height + 6,
+          r: fxCfg.size[0] + Math.random() * (fxCfg.size[1] - fxCfg.size[0]),
+          vy: fxCfg.sp[0] + Math.random() * (fxCfg.sp[1] - fxCfg.sp[0]),
+          sway: Math.random() * Math.PI * 2,
+          swaySp: 0.004 + Math.random() * 0.012,
+          c: fxCfg.colors[Math.floor(Math.random() * fxCfg.colors.length)],
+          a: 0.25 + Math.random() * 0.75
+        };
+      }
+      (function fxLoop(t) {
+        requestAnimationFrame(fxLoop);
+        if (document.hidden || fxReduced) return;
+        const w = fxC.width, h = fxC.height;
+        if (!w) return;
+        fxX.clearRect(0, 0, w, h);
+        for (let i = 0; i < fxParts.length; i++) {
+          const p = fxParts[i];
+          p.sway += p.swaySp * 16;
+          p.y -= p.vy * 1.4;
+          p.x += Math.sin(p.sway) * fxCfg.wind * 1.6;
+          if (p.y < -8 || p.x < -10 || p.x > w + 10) fxParts[i] = fxNew(false);
+          let a = fxCfg.alpha * p.a;
+          if (fxCfg.flicker) a *= 0.55 + 0.45 * Math.sin(t / 130 + p.sway * 7);
+          fxX.beginPath();
+          fxX.arc(p.x, p.y, p.r, 0, 6.2832);
+          fxX.fillStyle = "rgba(" + p.c + "," + Math.max(0.02, a).toFixed(3) + ")";
+          fxX.shadowColor = "rgba(" + p.c + ",0.8)";
+          fxX.shadowBlur = p.r * 4;
+          fxX.fill();
+        }
+        fxX.shadowBlur = 0;
+      })(0);
+      window.addEventListener("resize", () => { fxResize(); fxSeed(); });
+
+      function applyTheme(id, animate) {
+        const t = themeById(id);
+        const swap = () => {
+          if (t.id === "deathnote") delete document.documentElement.dataset.theme;
+          else document.documentElement.dataset.theme = t.id;
+          curTheme = t.id;
+          try { localStorage.setItem("axlmusic_theme", t.id); } catch (e) {}
+          const meta = $("#metaThemeColor"); if (meta) meta.setAttribute("content", t.bg);
+          /* hero + now-playing motifs follow the theme */
+          $$(".hero-apple, .np-apple").forEach((el) => { el.innerHTML = ICONS[t.motif] || ""; });
+          /* default artwork re-renders in the theme gradient */
+          const ph = makePlaceholder(t);
+          [$("#pbArt"), $("#npArt")].forEach((im) => { if (im && im.src === PLACEHOLDER_ART) im.src = ph; });
+          PLACEHOLDER_ART = ph;
+          /* theme-tinted veil for the next switch */
+          $("#themeVeil").style.background = t.bg;
+          /* particles re-seed with the theme's behaviour */
+          fxCfg = t.particles; fxSeed();
+          /* picker + nav button states */
+          $$(".th-card").forEach((c) => c.classList.toggle("active", c.dataset.themeCard === t.id));
+          const nb = $("#themeNavBtn");
+          if (nb) nb.innerHTML = ICONS.palette + "<span>Themes</span>" + '<span class="nav-badge" style="background:var(--glass-2);color:var(--text-2)">' + esc(t.name) + "</span>";
+        };
+        if (!animate) { swap(); return; }
+        const veil = $("#themeVeil");
+        veil.style.background = t.bg;
+        veil.style.opacity = "1";
+        setTimeout(() => { swap(); veil.style.opacity = "0"; }, 290);
+      }
+
+      /* ---- theme picker gallery: live mini-previews, each card carries its own palette ---- */
+      function buildThemeGallery() {
+        const grid = $("#thGrid");
+        grid.innerHTML = "";
+        THEMES.forEach((t) => {
+          const card = document.createElement("button");
+          card.className = "th-card" + (t.id === curTheme ? " active" : "");
+          card.dataset.themeCard = t.id;
+          card.setAttribute("aria-label", "Apply " + t.name + " theme");
+          card.style.cssText = "--p-bg:" + t.bg + ";--p-ink:" + t.ink + ";--p-acc:" + t.acc + ";--p-hi:" + t.hi + ";--p-grad:" + t.grad + ";--p-soft:" + t.soft + ";--p-line:" + t.line + ";--p-glow:rgba(" + t.rgb + ",0.4);--p-font:" + t.font;
+          const rows = [72, 52, 64].map((wd, i) =>
+            '<div class="tp-row"><span class="tp-thumb"></span><span class="tp-bar" style="width:' + wd + '%"></span></div>').join("");
+          const bars = [0.9, 0.5, 1, 0.65, 0.8, 0.42].map((ht, i) =>
+            '<i style="height:' + Math.round(ht * 100) + '%;animation-delay:' + (i * 0.11) + 's"></i>').join("");
+          card.innerHTML =
+            '<span class="th-badge">Active</span>' +
+            '<div class="th-prev">' +
+              '<div class="tp-top"><span class="tp-mark"></span><span class="tp-bar" style="width:44%"></span></div>' +
+              '<div class="tp-title" style="text-transform:' + t.tt + '">Every song.<br /><em>One search.</em></div>' +
+              rows +
+              '<div class="tp-player"><span class="tp-play">' + ICONS.play + '</span><span class="tp-bar" style="width:38%"></span><span class="tp-eq">' + bars + "</span></div>" +
+            "</div>" +
+            '<div class="th-meta"><div class="th-name" style="text-transform:' + t.tt + '">' + esc(t.name) + '</div>' +
+            '<div class="th-tag">' + esc(t.tag) + "</div>" +
+            '<div class="th-swatches">' + t.sw.map((c) => '<i style="background:' + c + '"></i>').join("") + "</div></div>";
+          card.addEventListener("click", () => {
+            if (curTheme !== t.id) { applyTheme(t.id, true); toast("Theme — " + t.name); }
+          });
+          grid.appendChild(card);
+        });
+      }
+      function openThemes() { buildThemeGallery(); $("#themeSheet").hidden = false; }
+      function closeThemes() { $("#themeSheet").hidden = true; }
+      $("#themeChip").addEventListener("click", openThemes);
+      $("#themeNavBtn").addEventListener("click", openThemes);
+      $("#thClose").addEventListener("click", closeThemes);
+      $("#thBackdrop").addEventListener("click", closeThemes);
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#themeSheet").hidden) closeThemes(); });
+
       /* ============================== init ============================== */
-      const PLACEHOLDER_ART = $("#pbArt").src;
+      let PLACEHOLDER_ART = $("#pbArt").src;
       [$("#pbArt"), $("#npArt")].forEach((im) => im.addEventListener("error", () => { if (im.src !== PLACEHOLDER_ART) im.src = PLACEHOLDER_ART; }));
+      fxResize();
+      applyTheme(curTheme, false);
       loadHome();
       refreshQueueUI();
     </script>
