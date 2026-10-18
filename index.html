@@ -379,23 +379,13 @@
       input[type="range"].wide::-moz-range-thumb { width: 19px; height: 19px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(var(--acc-rgb), 0.4); }
       .eq-disabled .faders, .eq-disabled .gain-card, .eq-disabled .preset-row { opacity: 0.42; pointer-events: none; filter: saturate(0.4); }
 
-      /* ---------- music source (YouTube / JioSaavn) ---------- */
+      /* ---------- YouTube player host ---------- */
       #ytHolder { position: fixed; left: -10000px; top: 0; width: 320px; height: 180px; overflow: hidden; pointer-events: none; }
-      .src-card { border-radius: var(--radius); background: var(--glass); background-image: var(--paper); border: 1px solid var(--stroke-soft); padding: 16px 18px; margin-bottom: 18px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
-      .src-card h2 { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
-      .src-card p { margin: 0 0 13px; font-size: 12.5px; color: var(--text-3); font-weight: 600; line-height: 1.5; max-width: 660px; }
-      .seg { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 99px; background: rgba(var(--ink-rgb), 0.06); border: 1px solid var(--stroke-soft); max-width: 100%; }
-      .seg button { padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 800; color: var(--text-2); white-space: nowrap; transition: background 0.25s var(--spring), color 0.2s, transform 0.15s; }
-      .seg button:active { transform: scale(0.95); }
-      .seg button.active { background: var(--grad); color: #fff; box-shadow: 0 6px 16px rgba(var(--acc-rgb), 0.35); }
-      .src-badge { display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 9px; border-radius: 99px; border: 1px solid rgba(var(--acc-rgb), 0.45); color: var(--red-hi); background: rgba(var(--acc-rgb), 0.12); white-space: nowrap; flex: none; }
-      .src-badge[hidden] { display: none; }
-      .src-badge.saavn { border-color: var(--stroke); color: var(--text-2); background: var(--glass); }
       .eq-yt-note { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: rgba(var(--acc-rgb), 0.1); border: 1px solid rgba(var(--acc-rgb), 0.35); font-size: 12.5px; }
       .eq-yt-note[hidden] { display: none; }
       .eq-yt-note b { color: var(--red-hi); white-space: nowrap; font-weight: 800; }
       .eq-yt-note span { color: var(--text-2); font-weight: 600; line-height: 1.45; }
-      @media (max-width: 560px) { #pbSrcBadge { display: none; } .eq-yt-note { flex-direction: column; gap: 3px; } }
+      @media (max-width: 560px) { .eq-yt-note { flex-direction: column; gap: 3px; } }
 
       /* ---------- queue ---------- */
       .queue-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -784,6 +774,7 @@
           </div>
           <button class="top-eq-chip" id="themeChip" aria-label="Change theme"><span data-icon="palette"></span><span class="lbl">Theme</span></button>
           <button class="top-eq-chip" id="eqChip" data-nav="eq"><span data-icon="sliders"></span><span class="lbl">Equalizer</span><span class="dot"></span></button>
+          <button class="top-eq-chip" id="fsChip" aria-label="Toggle fullscreen"><span data-icon="expand"></span><span class="lbl">Fullscreen</span></button>
         </header>
 
         <main id="views">
@@ -834,15 +825,6 @@
           <!-- EQUALIZER -->
           <section class="view" id="view-eq">
             <div class="eq-shell" id="eqShell">
-              <div class="src-card">
-                <h2>Music Source</h2>
-                <p id="srcDesc"></p>
-                <div class="seg" id="srcSeg" role="radiogroup" aria-label="Music source">
-                  <button data-srcmode="youtube" role="radio" aria-checked="false">YouTube (App System)</button>
-                  <button data-srcmode="saavn" role="radio" aria-checked="false">JioSaavn</button>
-                  <button data-srcmode="auto" role="radio" aria-checked="true">Auto</button>
-                </div>
-              </div>
               <div class="eq-top">
                 <div>
                   <h1 style="font-family:var(--font-disp);font-size:clamp(23px,3.2vw,32px);font-weight:800;letter-spacing:0.015em;margin:6px 0 4px">Equalizer</h1>
@@ -855,8 +837,8 @@
                 <div class="viz-note"><span>LIVE SPECTRUM</span><span id="vizState">Play a song to wake the spectrum</span></div>
               </div>
               <div class="eq-yt-note" id="eqYtNote" hidden>
-                <b>EQ unavailable on YouTube source</b>
-                <span>The current track streams from YouTube, whose player can't pass audio through the equalizer or volume boost. Play a JioSaavn track to use them.</span>
+                <b>EQ unavailable on YouTube</b>
+                <span>Every track streams from YouTube, whose player can't pass audio through the equalizer or volume boost — browser security keeps the YouTube player in its own pipeline. Your EQ settings stay saved; no fake processing is applied.</span>
               </div>
               <div class="preset-row" id="presetRow"></div>
               <div class="faders" id="faders"></div>
@@ -884,7 +866,6 @@
       <div class="pb-track">
         <img id="pbArt" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e11d2e'/%3E%3Cstop offset='.55' stop-color='%239c0d1a'/%3E%3Cstop offset='1' stop-color='%233d050a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='500' height='500' fill='url(%23g)'/%3E%3Cg fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' transform='translate(150,150) scale(8.4)'%3E%3Cpath d='M9 18.5V6.8c0-.5.34-.93.82-1.05l8-2A1.1 1.1 0 0 1 19.2 4.8v11.2'/%3E%3Ccircle cx='6.6' cy='18.5' r='2.6'/%3E%3Ccircle cx='16.8' cy='16' r='2.6'/%3E%3C/g%3E%3C/svg%3E" />
         <div class="pb-meta" id="pbMeta"><b id="pbTitle">Axlmusic Web</b><span id="pbArtist">Your move.</span></div>
-        <span class="src-badge" id="pbSrcBadge" hidden>YouTube</span>
         <button class="icon-btn" id="pbFav" aria-label="Like song"></button>
       </div>
       <div class="pb-center">
@@ -904,6 +885,7 @@
       <div class="pb-right">
         <button class="ctl-btn" id="btnEqOpen" aria-label="Open equalizer"></button>
         <button class="ctl-btn" id="btnQueueOpen" aria-label="Open queue"></button>
+        <button class="ctl-btn" id="btnFullscreen" aria-label="Toggle fullscreen"></button>
         <div class="vol-wrap">
           <button class="ctl-btn" id="btnMute" aria-label="Mute"></button>
           <input type="range" class="seek" id="vol" min="0" max="100" value="85" aria-label="Volume" />
@@ -934,7 +916,6 @@
         <img class="np-art" id="npArt" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e11d2e'/%3E%3Cstop offset='.55' stop-color='%239c0d1a'/%3E%3Cstop offset='1' stop-color='%233d050a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='500' height='500' fill='url(%23g)'/%3E%3Cg fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' transform='translate(150,150) scale(8.4)'%3E%3Cpath d='M9 18.5V6.8c0-.5.34-.93.82-1.05l8-2A1.1 1.1 0 0 1 19.2 4.8v11.2'/%3E%3Ccircle cx='6.6' cy='18.5' r='2.6'/%3E%3Ccircle cx='16.8' cy='16' r='2.6'/%3E%3C/g%3E%3C/svg%3E" />
         <div class="np-meta">
           <div style="min-width:0"><h2 id="npTitle">—</h2><p id="npArtist">—</p></div>
-          <span class="src-badge" id="npSrcBadge" hidden>YouTube</span>
           <button class="np-fav" id="npFav" aria-label="Like song"></button>
         </div>
         <canvas id="npViz" width="640" height="54"></canvas>
@@ -1011,7 +992,9 @@
         spiral: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 12a2 2 0 0 1 2 2 3.5 3.5 0 0 1-3.5-3.5A5.5 5.5 0 0 1 16 16a8 8 0 0 1-8-8 10.5 10.5 0 0 1 10.5 10.5"/></svg>',
         torii: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3.5 5.2h17M5.8 5.2c2 1.1 4 1.6 6.2 1.6s4.2-.5 6.2-1.6M6.8 9.6h10.4M8.8 9.6V20M15.2 9.6V20"/></svg>',
         flame: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8c.9 3.4-.5 5.1-2 6.6C8.6 10.8 7.9 12.3 7.9 14a4.6 4.6 0 0 0 9.2 0c0-1.3-.4-2.4-1.1-3.4-.3 1-.9 1.8-1.8 2.3.4-3-.5-6.7-2.2-10.1Z"/></svg>',
-        check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>'
+        check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></svg>',
+        expand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>',
+        compress: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4v5H5M20 10h-5V5M14 20v-5h5M4 14h5v5"/></svg>'
       };
       const NAV = {
         home: { icon: "home", label: "Home" },
@@ -1042,88 +1025,42 @@
         setTimeout(() => { t.classList.add("out"); setTimeout(() => t.remove(), 350); }, ms || 2600);
       }
 
-      /* ============================== api ============================== */
-      /* Two mirrors of the same JioSaavn API — if the primary stalls or fails,
-         the request falls through to the second so search/playback never dead-ends. */
-      const API_BASES = ["https://saavn.sumit.co/api", "https://saavn.dev/api"];
-      async function api(path, timeoutMs) {
-        let lastErr = null;
-        for (const base of API_BASES) {
-          const ctl = new AbortController();
-          const to = setTimeout(() => ctl.abort(), timeoutMs || 12000);
-          try {
-            const res = await fetch(base + path, { signal: ctl.signal });
-            if (!res.ok) throw new Error("HTTP " + res.status);
-            const json = await res.json();
-            if (json && json.success === false) throw new Error(json.message || "API error");
-            return json.data;
-          } catch (e) { lastErr = e; } finally { clearTimeout(to); }
-        }
-        throw lastErr || new Error("API unreachable");
-      }
-      /* Stream-URL cache: signed URLs expire after a few hours, so entries are
-         kept for 3h max — memory first, localStorage second. Repeat plays of a
-         track skip the resolve step entirely. */
-      const LS_STREAM = "axlmusic_stream_cache_v1";
-      const STREAM_TTL = 3 * 60 * 60 * 1000;
-      let streamStore = {};
-      try { streamStore = JSON.parse(localStorage.getItem(LS_STREAM) || "{}") || {}; } catch (e) { streamStore = {}; }
-      function getCachedStream(id) {
-        const c = streamStore[String(id)];
+      /* ============================== cache ==============================
+         Aggressive caching: YouTube search results and text suggestions live
+         in memory AND localStorage (30-minute TTL), so repeat searches and
+         re-typed queries answer instantly with zero network. */
+      const LS_YT_CACHE = "axlmusic_yt_cache_v2";
+      const YT_CACHE_TTL = 30 * 60 * 1000;
+      let ytLsCache = {};
+      try { ytLsCache = JSON.parse(localStorage.getItem(LS_YT_CACHE) || "{}") || {}; } catch (e) { ytLsCache = {}; }
+      function lsCacheGet(key) {
+        const c = ytLsCache[key];
         if (!c) return null;
-        if (Date.now() - c.ts > STREAM_TTL) { delete streamStore[String(id)]; return null; }
-        return c;
+        if (Date.now() - c.ts > YT_CACHE_TTL) { delete ytLsCache[key]; return null; }
+        return c.v;
       }
-      function setCachedStream(track) {
-        if (!track || !track.id || !track.src) return;
-        streamStore[String(track.id)] = { src: track.src, srcLow: track.srcLow, q: track.quality, ts: Date.now() };
-        const keys = Object.keys(streamStore);
-        if (keys.length > 60) keys.slice(0, keys.length - 60).forEach((k) => delete streamStore[k]);
-        try { localStorage.setItem(LS_STREAM, JSON.stringify(streamStore)); } catch (e) {}
+      function lsCacheSet(key, val) {
+        ytLsCache[key] = { v: val, ts: Date.now() };
+        const keys = Object.keys(ytLsCache);
+        if (keys.length > 80) keys.slice(0, keys.length - 80).forEach((k) => delete ytLsCache[k]);
+        try { localStorage.setItem(LS_YT_CACHE, JSON.stringify(ytLsCache)); } catch (e) {}
       }
+      /* the old dual-source settings are gone — YouTube is the only source */
+      try { localStorage.removeItem("axlmusic_source"); localStorage.removeItem("axlmusic_stream_cache_v1"); } catch (e) {}
       const imgOf = (arr, big) => {
         if (!arr || !arr.length) return "";
         const pick = big ? arr[arr.length - 1] : arr[Math.min(1, arr.length - 1)];
         return (pick && pick.url) || "";
       };
-      function normSong(s) {
-        if (!s || !s.downloadUrl || !s.downloadUrl.length) return null;
-        const best = s.downloadUrl[s.downloadUrl.length - 1];
-        const low = s.downloadUrl[Math.min(2, s.downloadUrl.length - 1)];
-        const artists = ((s.artists && s.artists.primary) || []).map((a) => entityDecode(a.name)).filter(Boolean);
-        const cached = getCachedStream(s.id);
-        return {
-          id: String(s.id),
-          title: entityDecode(s.name),
-          artist: artists.join(", ") || "Unknown artist",
-          album: s.album ? entityDecode(s.album.name) : "",
-          duration: Number(s.duration) || 0,
-          img: imgOf(s.image, true),
-          imgSm: imgOf(s.image, false),
-          src: cached ? cached.src : best.url,
-          srcLow: cached ? cached.srcLow : low.url,
-          quality: cached ? cached.q : best.quality
-        };
-      }
-      const normSongs = (list) => (list || []).map(normSong).filter(Boolean);
 
-      /* ============================== music source ==============================
-         Two engines behind one player UI:
-         - YouTube — the same system as the Axlmusic Android app. Playback runs
-           through the official YouTube IFrame Player API (hidden player, no
-           API keys, no cookies); search uses public Invidious instances
-           (flokinet primary) with a fallback chain, then JioSaavn.
-         - JioSaavn — direct audio files through the <audio> element + Web
-           Audio graph, which is what makes the 10-band EQ and volume boost
-           possible. YouTube audio can never enter that graph (browser security:
-           the iframe is a separate media pipeline), so on YouTube tracks the
-           EQ honestly reports itself unavailable instead of faking it.
-         Mode "auto" (default): YouTube first, JioSaavn steps in automatically
-         whenever a YouTube search or stream fails. */
-      const LS_SOURCE = "axlmusic_source";
-      let sourceMode = "auto";
-      try { const m = localStorage.getItem(LS_SOURCE); if (m === "youtube" || m === "saavn" || m === "auto") sourceMode = m; } catch (e) {}
-      const isYtTrack = (t) => !!(t && t.source === "yt");
+      /* ============================== YouTube search engine ==============================
+         100% YouTube — the same system as the Axlmusic Android app. Playback
+         runs through the official YouTube IFrame Player API (hidden player,
+         no API keys, no cookies); search uses public Invidious instances
+         (flokinet primary) with a fallback chain, and live text suggestions
+         come from YouTube's own suggest API. There is no second source: if
+         YouTube search fails, the UI shows an honest retry state. */
+      const isYtTrack = (t) => !!(t && (t.source === "yt" || t.ytId));
 
       function fetchJson(url, timeoutMs) {
         return new Promise((resolve, reject) => {
@@ -1150,13 +1087,11 @@
           src: "", srcLow: "", quality: ""
         };
       }
-      /* Invidious search chain — the old Invidious/Piped mirror list died
-         (401/403/502/timeouts, network-verified 2026-10-18). Primary is
-         invidious.flokinet.to (verified working 2026-10-18: real video IDs,
-         CORS open). Public instances die often, so the backups below are
-         plain base URLs — swap in fresh ones from the public instance list
-         without touching the logic. If every instance fails, ytSearchSongs
-         returns [] and the callers fall back to JioSaavn search. */
+      /* Invidious search chain — public instances die often, so several base
+         URLs are tried in order (flokinet verified working 2026-10-18: real
+         video IDs, CORS open). If EVERY instance fails, ytSearchSongs throws
+         and the callers show an honest retry state — never a silent swap to
+         another service. */
       const YT_INVIDIOUS = [
         "https://invidious.flokinet.to",
         "https://inv.nadeko.net",
@@ -1185,49 +1120,95 @@
             return t;
           }).filter(Boolean);
       }
+      const ytSearchMem = new Map();
       async function ytSearchSongs(q, limit) {
+        limit = limit || 20;
+        const key = "songs|" + q.toLowerCase() + "|" + limit;
+        if (ytSearchMem.has(key)) return ytSearchMem.get(key);
+        const cached = lsCacheGet(key);
+        if (cached) { ytSearchMem.set(key, cached); return cached; }
         const enc = encodeURIComponent(q);
+        let lastErr = null, sawSuccess = false;
         for (const base of YT_INVIDIOUS) {
           try {
             const json = await fetchJson(base + "/api/v1/search?q=" + enc + "&type=video", 7000);
-            const songs = parseInvidious(json, base).slice(0, limit || 20);
-            if (songs.length) return songs;
-          } catch (e) { /* fall through to the next instance */ }
+            sawSuccess = true;
+            const songs = parseInvidious(json, base).slice(0, limit);
+            if (songs.length) { ytSearchMem.set(key, songs); lsCacheSet(key, songs); return songs; }
+          } catch (e) { lastErr = e; }
         }
+        if (!sawSuccess) throw lastErr || new Error("YouTube search unreachable");
         return [];
       }
-      /* source picker — lives in the Equalizer (studio) view */
-      const SRC_DESCS = {
-        youtube: "Songs stream from YouTube — the same system as the Axlmusic Android app. YouTube audio can't pass through the EQ or volume boost, so those apply to JioSaavn tracks only.",
-        saavn: "Songs stream from JioSaavn as direct audio files — the full 10-band EQ and volume boost apply to every track.",
-        auto: "YouTube first — the app system. If a song can't be found or played on YouTube, Axlmusic switches to JioSaavn automatically."
-      };
-      const HERO_SUBS = {
-        youtube: "Bollywood, Punjabi, Lo-Fi, global hits — streamed from YouTube, the app system, resolved in a blink. Your move.",
-        saavn: "Bollywood, Punjabi, Lo-Fi, global hits — streamed from JioSaavn, shaped by a 10-band studio EQ. Your move.",
-        auto: "Bollywood, Punjabi, Lo-Fi, global hits — YouTube streaming like the app, JioSaavn in reserve, resolved in a blink. Your move."
-      };
-      function syncSrcSeg() {
-        $$("#srcSeg [data-srcmode]").forEach((b) => {
-          const on = b.dataset.srcmode === sourceMode;
-          b.classList.toggle("active", on);
-          b.setAttribute("aria-checked", String(on));
-        });
-        const d = $("#srcDesc");
-        if (d) d.textContent = SRC_DESCS[sourceMode];
-        const hs = $("#heroSub");
-        if (hs) hs.textContent = HERO_SUBS[sourceMode];
+      /* YouTube playlists — the Playlists and Albums tabs both live here
+         (on YouTube, albums are playlists). */
+      function parseYtPlaylists(json, base) {
+        return (Array.isArray(json) ? json : [])
+          .filter((v) => v && v.type === "playlist" && v.playlistId)
+          .map((v) => {
+            let thumb = "";
+            if (Array.isArray(v.playlistThumbnails) && v.playlistThumbnails.length) {
+              const t = v.playlistThumbnails[v.playlistThumbnails.length - 1];
+              if (t && t.url) thumb = t.url.charAt(0) === "/" ? base + t.url : t.url;
+            }
+            if (!thumb && Array.isArray(v.videos) && v.videos[0] && v.videos[0].videoId) thumb = "https://i.ytimg.com/vi/" + v.videos[0].videoId + "/hqdefault.jpg";
+            return {
+              id: v.playlistId, ytPlaylist: true,
+              name: entityDecode(v.title || "Playlist"),
+              author: entityDecode(v.author || ""),
+              songCount: Number(v.videoCount) || 0,
+              image: thumb ? [{ url: thumb }] : []
+            };
+          });
       }
-      $$("#srcSeg [data-srcmode]").forEach((b) => b.addEventListener("click", () => {
-        if (sourceMode === b.dataset.srcmode) return;
-        sourceMode = b.dataset.srcmode;
-        try { localStorage.setItem(LS_SOURCE, sourceMode); } catch (e) {}
-        suggestCache.clear();
-        syncSrcSeg();
-        toast("Music source — " + b.textContent.trim());
-        if (S.searchQ) runSearch(S.searchQ, true);
-      }));
-      syncSrcSeg();
+      async function ytSearchPlaylists(q, limit) {
+        limit = limit || 24;
+        const key = "pls|" + q.toLowerCase() + "|" + limit;
+        if (ytSearchMem.has(key)) return ytSearchMem.get(key);
+        const cached = lsCacheGet(key);
+        if (cached) { ytSearchMem.set(key, cached); return cached; }
+        const enc = encodeURIComponent(q);
+        let lastErr = null, sawSuccess = false;
+        for (const base of YT_INVIDIOUS) {
+          try {
+            const json = await fetchJson(base + "/api/v1/search?q=" + enc + "&type=playlist", 7000);
+            sawSuccess = true;
+            const pls = parseYtPlaylists(json, base).slice(0, limit);
+            if (pls.length) { ytSearchMem.set(key, pls); lsCacheSet(key, pls); return pls; }
+          } catch (e) { lastErr = e; }
+        }
+        if (!sawSuccess) throw lastErr || new Error("YouTube search unreachable");
+        return [];
+      }
+      async function ytPlaylistTracks(playlistId) {
+        let lastErr = null;
+        for (const base of YT_INVIDIOUS) {
+          try {
+            const json = await fetchJson(base + "/api/v1/playlists/" + encodeURIComponent(playlistId), 9000);
+            const vids = (json && json.videos) || [];
+            const songs = vids.map((v) => normYtVideo(v.videoId, v.title, v.author, v.lengthSeconds)).filter(Boolean);
+            return { name: entityDecode((json && json.title) || ""), author: entityDecode((json && json.author) || ""), songs: songs };
+          } catch (e) { lastErr = e; }
+        }
+        throw lastErr || new Error("Playlist unreachable");
+      }
+      /* YouTube's own live suggestions — the same endpoint YouTube Music uses
+         as you type. Results are cached in memory + localStorage. */
+      const ytSuggestMem = new Map();
+      async function ytTextSuggestions(q) {
+        const key = q.toLowerCase();
+        if (ytSuggestMem.has(key)) return ytSuggestMem.get(key);
+        const cached = lsCacheGet("sug|" + key);
+        if (cached) { ytSuggestMem.set(key, cached); return cached; }
+        const url = "https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=" + encodeURIComponent(q);
+        const json = await fetchJson(url, 3500);
+        const list = (Array.isArray(json) && Array.isArray(json[1]))
+          ? json[1].map((s) => (Array.isArray(s) ? String(s[0] || "") : String(s || ""))).filter(Boolean).slice(0, 6)
+          : [];
+        ytSuggestMem.set(key, list);
+        lsCacheSet("sug|" + key, list);
+        return list;
+      }
 
       /* ============================== state ============================== */
       const S = {
@@ -1598,19 +1579,19 @@
           const body = blocks[i];
           try {
             if (sec.kind === "songs") {
-              const data = await api("/search/songs?query=" + encodeURIComponent(sec.q) + "&page=0&limit=8");
-              const songs = normSongs(data.results);
-              body.querySelector(".skeleton").remove();
+              const songs = await ytSearchSongs(sec.q, 8);
+              const sk = body.querySelector(".skeleton"); if (sk) sk.remove();
+              if (!songs.length) { body.remove(); return; }
               renderTrackList(body, songs);
             } else {
-              const data = await api("/search/" + sec.kind + "?query=" + encodeURIComponent(sec.q) + "&page=0&limit=8");
+              const pls = await ytSearchPlaylists(sec.q, 8);
               const grid = body.querySelector(".card-grid");
               grid.innerHTML = "";
-              (data.results || []).slice(0, 8).forEach((item, ci) => grid.appendChild(cardEl(item, sec.kind === "playlists" ? "playlist" : "album", ci)));
-              if (!data.results || !data.results.length) body.remove();
+              pls.slice(0, 8).forEach((item, ci) => grid.appendChild(cardEl(item, "playlist", ci)));
+              if (!pls.length) body.remove();
             }
           } catch (e) {
-            body.innerHTML = '<div class="section-head"><h2>' + sec.title + '</h2></div><div class="empty"><b>Could not load</b><p>Check your connection and try again.</p><button data-retry="' + i + '">Retry</button></div>';
+            body.innerHTML = '<div class="section-head"><h2>' + sec.title + '</h2></div><div class="empty"><b>Could not load</b><p>YouTube did not answer. Check your connection and try again.</p><button data-retry="' + i + '">Retry</button></div>';
             const rb = body.querySelector("[data-retry]");
             if (rb) rb.addEventListener("click", loadHome);
           }
@@ -1621,7 +1602,6 @@
       const searchInput = $("#searchInput");
       const suggestEl = $("#suggest");
       const TRENDING = ["Arijit Singh", "Tum Hi Ho", "Punjabi Hits", "A.R. Rahman", "Lo-Fi Bollywood", "Shreya Ghoshal", "Pritam", "Old Bollywood Classics"];
-      const suggestCache = new Map();
       let sgTimer = null, sgSeq = 0;
 
       function hideSuggest() { suggestEl.hidden = true; suggestEl.innerHTML = ""; }
@@ -1643,38 +1623,55 @@
         });
         suggestEl.hidden = false;
       }
-      async function showSuggestions(q) {
-        const seq = ++sgSeq;
-        const key = q.toLowerCase();
-        const ckey = sourceMode + "|" + key;
-        let songs = suggestCache.get(ckey);
-        if (!songs) {
-          try {
-            if (sourceMode !== "saavn") songs = await ytSearchSongs(q, 6);
-            if (!songs || !songs.length) {
-              const data = await api("/search/songs?query=" + encodeURIComponent(q) + "&page=0&limit=6", 9000);
-              songs = normSongs(data.results || []);
-            }
-            if (suggestCache.size > 40) suggestCache.clear();
-            suggestCache.set(ckey, songs);
-          } catch (e) { return; }
-        }
+      function renderSuggest(q, texts, songs, seq) {
         if (seq !== sgSeq || document.activeElement !== searchInput) return;
-        if (searchInput.value.trim().toLowerCase() !== key) return;
+        if (searchInput.value.trim().toLowerCase() !== q.toLowerCase()) return;
         suggestEl.innerHTML = "";
-        const head = document.createElement("div");
-        head.className = "sg-head"; head.textContent = songs.length ? "Songs" : "No matches";
-        suggestEl.appendChild(head);
-        songs.forEach((s, i) => {
-          const r = sgRow('<img alt="" src="' + esc(s.imgSm || s.img) + '" /><span style="min-width:0"><b>' + esc(s.title) + "</b><span>" + esc(s.artist) + '</span></span><span class="sg-go">PLAY</span>');
-          r.querySelector("img").addEventListener("error", function () { this.style.visibility = "hidden"; });
-          r.addEventListener("click", () => { hideSuggest(); playFromList(songs, i); });
-          suggestEl.appendChild(r);
-        });
-        const all = sgRow('<span class="sg-ic">' + ICONS.search + "</span><span style='min-width:0'><b>See all results for “" + esc(q) + "”</b></span>", "all");
+        if (texts.length) {
+          const head = document.createElement("div");
+          head.className = "sg-head"; head.textContent = "Suggestions";
+          suggestEl.appendChild(head);
+          texts.forEach((t) => {
+            const r = sgRow('<span class="sg-ic">' + ICONS.search + "</span><span style='min-width:0'><b>" + esc(t) + '</b></span><span class="sg-go">SEARCH</span>');
+            r.addEventListener("click", () => { searchInput.value = t; $("#searchForm").classList.add("has-text"); hideSuggest(); runSearch(t, true); });
+            suggestEl.appendChild(r);
+          });
+        }
+        if (songs.length) {
+          const head = document.createElement("div");
+          head.className = "sg-head"; head.textContent = "Songs";
+          suggestEl.appendChild(head);
+          songs.forEach((s, i) => {
+            const r = sgRow('<img alt="" src="' + esc(s.imgSm || s.img) + '" /><span style="min-width:0"><b>' + esc(s.title) + "</b><span>" + esc(s.artist) + '</span></span><span class="sg-go">PLAY</span>');
+            r.querySelector("img").addEventListener("error", function () { this.style.visibility = "hidden"; });
+            r.addEventListener("click", () => { hideSuggest(); playFromList(songs, i); });
+            suggestEl.appendChild(r);
+          });
+        }
+        if (!texts.length && !songs.length) {
+          const head = document.createElement("div");
+          head.className = "sg-head"; head.textContent = "No instant matches — press Enter for full search";
+          suggestEl.appendChild(head);
+        }
+        const all = sgRow('<span class="sg-ic">' + ICONS.search + "</span><span style='min-width:0'><b>See all results for \u201C" + esc(q) + "\u201D</b></span>", "all");
         all.addEventListener("click", () => { hideSuggest(); runSearch(q, true); });
         suggestEl.appendChild(all);
         suggestEl.hidden = false;
+      }
+      async function showSuggestions(q) {
+        const seq = ++sgSeq;
+        const key = q.toLowerCase();
+        /* cache-first: a repeat query paints the dropdown instantly, offline of the network */
+        const cTexts = ytSuggestMem.get(key) || lsCacheGet("sug|" + key);
+        const cSongs = ytSearchMem.get("songs|" + key + "|6") || lsCacheGet("songs|" + key + "|6");
+        if (cTexts || cSongs) {
+          renderSuggest(q, cTexts || [], cSongs || [], seq);
+          if (cTexts && cSongs) return;
+        }
+        let texts = cTexts || [], songs = cSongs || [];
+        try { texts = await ytTextSuggestions(q); } catch (e) { /* suggestions are best-effort */ }
+        try { songs = await ytSearchSongs(q, 6); } catch (e) { songs = songs || []; }
+        renderSuggest(q, texts, songs, seq);
       }
       searchInput.addEventListener("focus", () => {
         const q = searchInput.value.trim();
@@ -1692,8 +1689,8 @@
         clearTimeout(sgTimer);
         if (!q) { showTrending(); return; }
         if (q.length < 2) { hideSuggest(); return; }
-        sgTimer = setTimeout(() => showSuggestions(q), 150);
-        debounce = setTimeout(() => runSearch(q, false), 250);
+        sgTimer = setTimeout(() => showSuggestions(q), 120);
+        debounce = setTimeout(() => runSearch(q, false), 300);
       });
       $("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); const q = searchInput.value.trim(); hideSuggest(); if (q) runSearch(q, true); searchInput.blur(); });
       $("#searchClear").addEventListener("click", () => { searchInput.value = ""; $("#searchForm").classList.remove("has-text"); hideSuggest(); searchInput.focus(); showTrending(); });
@@ -1723,21 +1720,10 @@
         if (words.length > 3) push(words.slice(0, 2).join(" "));
         return out;
       }
-      async function fetchSearchSmart(tab, q, page, limit) {
-        const variants = page === 0 ? queryVariants(q) : [S._effectiveQ || q];
-        let best = null;
-        for (const v of variants) {
-          const data = await api("/search/" + tab + "?query=" + encodeURIComponent(v) + "&page=" + page + "&limit=" + limit);
-          const n = (data.results || []).length;
-          if (!best || n > (best.results || []).length) { best = data; S._effectiveQ = v; }
-          if (n >= Math.min(4, limit) || page > 0) break;
-        }
-        return best;
-      }
       async function runSearch(q, fresh) {
         S.searchQ = q; S.searchPage = 0; S._effectiveQ = q;
         showView("search");
-        $("#searchTitle").textContent = "Results for “" + q + "”";
+        $("#searchTitle").textContent = "Results for \u201C" + q + "\u201D";
         $("#searchCount").textContent = "";
         await loadSearchPage(0, false);
       }
@@ -1749,69 +1735,46 @@
         if (!append) box.innerHTML = '<div class="skeleton" style="height:300px"></div>';
         $("#loadMore").style.display = "none";
         try {
-          const limit = tab === "songs" ? 20 : 24;
-          /* YouTube is the primary source (the app system): in Auto and YouTube
-             modes the Songs tab answers from YouTube first; an empty or failed
-             YouTube search falls through to JioSaavn below. Playlists / Albums
-             tabs always come from JioSaavn collections. */
-          if (tab === "songs" && !append && sourceMode !== "saavn") {
-            const ytSongs = await ytSearchSongs(q, 24);
-            if (tab !== S.searchTab || q !== S.searchQ) return;
-            if (ytSongs.length) {
-              S.searchPage = 0;
-              S.searchTotal = ytSongs.length;
-              $("#searchCount").textContent = ytSongs.length + " from YouTube";
-              S._searchSongs = ytSongs;
-              renderTrackList(box, ytSongs, {
-                emptyHtml: '<div class="empty"><b>Nothing found</b><p>No track by that name — yet. Try the artist, or one word from the title.</p></div>',
-                onPlay: (t, i) => playFromList(S._searchSongs, i)
-              });
-              $("#loadMore").style.display = "none";
-              return;
-            }
-          }
-          const data = await fetchSearchSmart(tab, q, page, limit);
-          if (tab !== S.searchTab || q !== S.searchQ) return;
-          S.searchPage = page;
-          S.searchTotal = data.total || 0;
-          const results = data.results || [];
-          $("#searchCount").textContent = S.searchTotal ? S.searchTotal.toLocaleString("en-IN") + " found" : "";
           if (tab === "songs") {
-            const songs = normSongs(results);
-            if (append) {
-              const base = (S._searchSongs || []).length;
-              S._searchSongs = (S._searchSongs || []).concat(songs);
-              const existing = box.querySelector(".track-list");
-              if (existing) {
-                const frag = document.createElement("div");
-                renderTrackList(frag, songs, { onPlay: (t, i) => playFromList(S._searchSongs, base + i) });
-                const fragList = frag.querySelector(".track-list");
-                if (fragList) while (fragList.firstChild) existing.appendChild(fragList.firstChild);
-              } else {
-                renderTrackList(box, S._searchSongs, { onPlay: (t, i) => playFromList(S._searchSongs, i) });
+            let songs = await ytSearchSongs(q, 24);
+            if (!songs.length) {
+              const variants = queryVariants(q);
+              for (const v of variants.slice(1)) {
+                const alt = await ytSearchSongs(v, 24);
+                if (alt.length) { songs = alt; S._effectiveQ = v; break; }
               }
-            } else {
-              S._searchSongs = songs;
-              renderTrackList(box, songs, {
-                emptyHtml: '<div class="empty"><b>Nothing found</b><p>No track by that name — yet. Try the artist, or one word from the title.</p></div>',
-                onPlay: (t, i) => playFromList(S._searchSongs, i)
-              });
             }
+            if (tab !== S.searchTab || q !== S.searchQ) return;
+            S.searchPage = 0;
+            S.searchTotal = songs.length;
+            $("#searchCount").textContent = songs.length ? songs.length + " from YouTube" : "";
+            S._searchSongs = songs;
+            renderTrackList(box, songs, {
+              emptyHtml: '<div class="empty"><b>Nothing found</b><p>No track by that name on YouTube — yet. Try the artist, or one word from the title.</p></div>',
+              onPlay: (t, i) => playFromList(S._searchSongs, i)
+            });
           } else {
-            if (!append) box.innerHTML = "";
-            if (!results.length && !append) { box.innerHTML = '<div class="empty"><b>Nothing found</b><p>Try another name.</p></div>'; }
-            const grid = document.createElement("div");
-            grid.className = "card-grid";
-            results.forEach((item, ci) => grid.appendChild(cardEl(item, tab === "playlists" ? "playlist" : "album", ci)));
-            box.appendChild(grid);
+            const pls = await ytSearchPlaylists(q, 24);
+            if (tab !== S.searchTab || q !== S.searchQ) return;
+            S.searchPage = 0;
+            S.searchTotal = pls.length;
+            $("#searchCount").textContent = pls.length ? pls.length + " from YouTube" : "";
+            box.innerHTML = "";
+            if (!pls.length) {
+              box.innerHTML = '<div class="empty"><b>Nothing found</b><p>Try another name.</p></div>';
+            } else {
+              const grid = document.createElement("div");
+              grid.className = "card-grid";
+              pls.forEach((item, ci) => grid.appendChild(cardEl(item, "playlist", ci)));
+              box.appendChild(grid);
+            }
           }
-          const shown = (page + 1) * limit;
-          $("#loadMore").style.display = results.length >= limit && shown < S.searchTotal ? "block" : "none";
+          $("#loadMore").style.display = "none";
         } catch (e) {
-          if (!append) box.innerHTML = '<div class="empty"><b>Search failed</b><p>The network is slow. Try once more.</p><button id="searchRetry">Retry</button></div>';
+          if (!append) box.innerHTML = '<div class="empty"><b>YouTube search failed</b><p>YouTube did not answer — check your connection and try again.</p><button id="searchRetry">Retry</button></div>';
           const rb = $("#searchRetry");
           if (rb) rb.addEventListener("click", () => loadSearchPage(page, append));
-          else toast("Network error — try again");
+          else toast("YouTube unreachable — try again");
         } finally { S.searchBusy = false; }
       }
 
@@ -1823,28 +1786,27 @@
         const body = $("#collBody");
         body.innerHTML = '<div class="skeleton" style="height:340px"></div>';
         try {
-          const data = await api("/" + type + "s?id=" + encodeURIComponent(id) + "&page=0&limit=100");
-          const songs = normSongs(data.songs);
+          const data = await ytPlaylistTracks(id);
+          const songs = data.songs;
           S.collSongs = songs;
-          const name = entityDecode(data.name || (item && item.name) || "");
-          const desc = entityDecode(data.description || "");
+          const name = data.name || (item && item.name) || "Playlist";
           body.innerHTML =
-            '<div class="coll-head"><img alt="" src="' + esc(imgOf(data.image, true)) + '" />' +
-            '<div class="c-meta"><span class="c-type">' + (type === "playlist" ? "Playlist" : "Album") + "</span><h1>" + esc(name) + "</h1>" +
-            "<p>" + songs.length + " songs" + (desc ? " · " + esc(desc.slice(0, 140)) : "") + "</p>" +
+            '<div class="coll-head"><img alt="" src="' + esc(item ? imgOf(item.image, true) : "") + '" />' +
+            '<div class="c-meta"><span class="c-type">YouTube Playlist</span><h1>' + esc(name) + "</h1>" +
+            "<p>" + songs.length + " songs" + (data.author ? " · " + esc(data.author) : "") + "</p>" +
             '<div class="coll-actions"><button class="btn-grad" id="collPlay">' + ICONS.play + "Play All</button>" +
             '<button class="btn-ghost" id="collShuffle">' + ICONS.shuffle + "Shuffle</button>" +
             '<button class="btn-ghost" id="collQueue">' + ICONS.plus + "Add All to Queue</button></div></div></div>" +
             '<div id="collTracks"></div>';
           renderTrackList($("#collTracks"), songs, {
-            emptyHtml: '<div class="empty"><b>No playable tracks here</b><p>Try another collection.</p></div>',
+            emptyHtml: '<div class="empty"><b>No playable tracks here</b><p>Try another playlist.</p></div>',
             onPlay: (t, i) => playFromList(S.collSongs, i)
           });
           const cp = $("#collPlay"); if (cp) cp.addEventListener("click", () => songs.length && playFromList(songs, 0));
           const cs = $("#collShuffle"); if (cs) cs.addEventListener("click", () => { if (!songs.length) return; S.shuffle = true; syncTransport(); playFromList(songs, Math.floor(Math.random() * songs.length)); });
           const cq = $("#collQueue"); if (cq) cq.addEventListener("click", () => { S.queue.push.apply(S.queue, songs); refreshQueueUI(); toast(songs.length + " songs added to the queue"); });
         } catch (e) {
-          body.innerHTML = '<div class="empty"><b>Could not load this collection</b><p>Check your connection and retry.</p><button id="collRetry">Retry</button></div>';
+          body.innerHTML = '<div class="empty"><b>Could not load this playlist</b><p>YouTube did not answer. Check your connection and retry.</p><button id="collRetry">Retry</button></div>';
           const rb = $("#collRetry"); if (rb) rb.addEventListener("click", () => openCollection(type, id, item));
         }
       }
@@ -1951,12 +1913,12 @@
       }
       function ytPendingFail() {
         const p = ytPending; ytPending = null;
-        if (p && current() === p.track) { toast("YouTube unavailable — switching to JioSaavn"); ytFallback(p.track); }
+        if (p && current() === p.track) ytHandleFailure(p.track);
       }
       function ytLoad(track, autoplay) {
         ytPos = 0; ytDur = track.duration || 0;
         if (!ytPlayer || ytApiState !== "ready") {
-          if (ytApiState === "failed") { toast("YouTube unavailable — switching to JioSaavn"); ytFallback(track); return; }
+          if (ytApiState === "failed") { ytHandleFailure(track); return; }
           ytPending = { track: track, autoplay: autoplay };
           loadYtApi();
           return;
@@ -1964,7 +1926,7 @@
         try {
           if (autoplay) ytPlayer.loadVideoById(track.ytId);
           else ytPlayer.cueVideoById(track.ytId);
-        } catch (e) { ytFallback(track); return; }
+        } catch (e) { ytHandleFailure(track); return; }
         ytStartTicker();
       }
       function ytStartTicker() {
@@ -1991,36 +1953,18 @@
         const t = current();
         if (!isYtTrack(t)) return;
         S.loading = false;
-        toast("YouTube can't play this one — trying JioSaavn");
-        ytFallback(t);
+        ytHandleFailure(t);
       }
-      /* YouTube failed for this track: find the same song on JioSaavn and swap
-         it into the queue slot, so playback never dead-ends. */
-      async function ytFallback(t) {
-        if (!t || t._fbTried) {
-          S.loading = false; S.playing = false; syncTransport();
-          toast("This track could not play — moving on");
-          setTimeout(() => next(false), 600);
-          return;
-        }
-        t._fbTried = true;
-        const idx = S.queue.indexOf(t);
-        try {
-          const queries = [t.title + " " + t.artist, t.title];
-          for (const q of queries) {
-            const data = await api("/search/songs?query=" + encodeURIComponent(q) + "&page=0&limit=5", 9000);
-            const alt = normSongs(data.results || [])[0];
-            if (alt) {
-              if (idx >= 0) S.queue[idx] = alt;
-              toast("Playing from JioSaavn — " + alt.title);
-              loadTrack(true); refreshQueueUI();
-              return;
-            }
-          }
-        } catch (e) {}
+      /* YouTube failed for this track: there is no second source to fall
+         back to — say so honestly, then move on to the next queued track. */
+      function ytHandleFailure(t) {
         S.loading = false; S.playing = false; syncTransport();
-        toast("This track could not play — moving on");
-        setTimeout(() => next(false), 600);
+        if (S.queue.length > 1) {
+          toast("YouTube can't play this one — moving on");
+          setTimeout(() => next(false), 600);
+        } else {
+          toast("YouTube can't play this track — check your connection and tap play to retry");
+        }
       }
       function ytStop() {
         ytPending = null;
@@ -2051,27 +1995,27 @@
         if (curIsYt()) return ytDur || (t ? t.duration : 0) || 0;
         return audio.duration || (t ? t.duration : 0) || 0;
       }
-      /* source badges + the honest EQ note follow the current track */
+      /* the honest EQ note: every track is YouTube, so the note shows
+         whenever a track is loaded */
       function syncSourceUI() {
-        const t = current();
-        const yt = isYtTrack(t);
-        ["#pbSrcBadge", "#npSrcBadge"].forEach((sel) => {
-          const b = $(sel);
-          if (!b) return;
-          b.hidden = !t;
-          b.textContent = yt ? "YouTube" : "JioSaavn";
-          b.classList.toggle("saavn", !yt);
-        });
         const note = $("#eqYtNote");
-        if (note) note.hidden = !yt;
+        if (note) note.hidden = !current();
       }
 
       /* ============================== player engine ============================== */
-      /* Prefetch pipeline: two silent Audio elements keep the browser's media
-         cache warm — one for the next track in queue, one for whatever row the
-         pointer is hovering — so taps and Next start with zero network wait. */
-      const prefetchEl = new Audio(); prefetchEl.preload = "auto"; prefetchEl.muted = true;
-      const warmEl = new Audio(); warmEl.preload = "auto"; warmEl.muted = true;
+      /* Prefetch pipeline: the next track's thumbnail is preloaded into the
+         browser cache (and its metadata is already in hand from search), so
+         Next and taps paint instantly with zero wait. */
+      const imgWarm = new Map();
+      function warmThumb(track) {
+        if (!track) return;
+        [track.img, track.imgSm].forEach((u) => {
+          if (u && !imgWarm.has(u)) {
+            const im = new Image(); im.src = u; imgWarm.set(u, im);
+            if (imgWarm.size > 40) imgWarm.delete(imgWarm.keys().next().value);
+          }
+        });
+      }
       function nextInQueue() {
         if (S.idx >= 0 && S.idx < S.queue.length - 1) return S.queue[S.idx + 1];
         if (S.repeat === 1 && S.queue.length) return S.queue[0];
@@ -2079,14 +2023,9 @@
       }
       function prefetchNext() {
         const n = nextInQueue();
-        if (n && n.src && prefetchEl.src !== n.src) { try { prefetchEl.src = n.src; prefetchEl.load(); } catch (e) {} }
+        if (n) warmThumb(n);
       }
-      function warmStream(track) {
-        if (!track || !track.src) return;
-        const cur = current();
-        if (cur && cur.id === track.id) return;
-        if (warmEl.src !== track.src) { try { warmEl.src = track.src; warmEl.load(); } catch (e) {} }
-      }
+      function warmStream(track) { warmThumb(track); }
       function playFromList(list, index) {
         if (!list || !list.length) return;
         S.queue = list.slice(); S.idx = index; S.history = [];
@@ -2105,26 +2044,12 @@
         S.loading = true;
         if (autoplay) S.playing = true;
         syncTransport();
-        if (isYtTrack(t)) {
-          /* YouTube track: the <audio> element (and its EQ graph) steps aside;
-             the hidden IFrame player owns playback. */
-          try { audio.pause(); } catch (e) {}
-          ytLoad(t, autoplay);
-        } else {
-          ytStop();
-          ensureGraph();
-          audio.src = t.src;
-          audio.playbackRate = 1;
-          if (autoplay) {
-            const p = audio.play();
-            if (p) p.catch(() => {
-              if (audio.src !== t.srcLow && t.srcLow) {
-                audio.src = t.srcLow;
-                audio.play().catch(() => { S.playing = false; syncTransport(); toast("This track could not play"); });
-              } else { S.playing = false; syncTransport(); toast("This track could not play"); }
-            });
-          }
-        }
+        /* YouTube owns playback: the <audio> element steps aside and the
+           hidden IFrame player plays the track. Nothing ever pauses this
+           player for tab visibility — background and lock-screen playback
+           are carried by the player plus the Media Session controls. */
+        try { audio.pause(); } catch (e) {}
+        ytLoad(t, autoplay);
         updatePlayerUI(); refreshQueueUI(); prefetchNext();
         if ("mediaSession" in navigator) {
           const art = [];
@@ -2140,14 +2065,8 @@
       }
       function togglePlay() {
         if (!current()) { toast("Choose a song first"); return; }
-        if (curIsYt()) {
-          if (S.playing) engPause();
-          else { S.playing = true; syncTransport(); engPlay(); }
-          return;
-        }
-        ensureGraph();
-        if (audio.paused) { S.playing = true; syncTransport(); audio.play().catch(() => { S.playing = false; syncTransport(); toast("Playback failed — tap again"); }); }
-        else audio.pause();
+        if (S.playing) engPause();
+        else { S.playing = true; syncTransport(); engPlay(); }
       }
       function next(auto) {
         if (!S.queue.length) return;
@@ -2170,39 +2089,14 @@
         else S.idx = S.queue.length - 1;
         loadTrack(true); refreshQueueUI();
       }
-      /* the <audio> element only owns JioSaavn tracks — when a YouTube track is
-         current, its events are stale noise and must not touch transport state */
+      /* every track is a YouTube track, so the <audio> element's events are
+         stale noise and must not touch transport state */
       audio.addEventListener("play", () => { if (curIsYt()) return; S.playing = true; S.loading = false; syncTransport(); markNowRows(); syncMediaState(); resumeCtx(); });
       audio.addEventListener("pause", () => { if (curIsYt()) return; S.playing = false; syncTransport(); markNowRows(); syncMediaState(); });
       audio.addEventListener("waiting", () => { if (curIsYt()) return; S.loading = true; syncTransport(); });
-      audio.addEventListener("playing", () => { if (curIsYt()) return; S.loading = false; syncTransport(); resumeCtx(); const t = current(); if (t) setCachedStream(t); prefetchNext(); });
+      audio.addEventListener("playing", () => { if (curIsYt()) return; S.loading = false; syncTransport(); resumeCtx(); prefetchNext(); });
       audio.addEventListener("ended", () => { if (curIsYt()) return; next(true); syncMediaState(); });
-      audio.addEventListener("error", async () => {
-        const t = current();
-        if (!t || isYtTrack(t)) return;
-        if (!t._triedLow && audio.src !== t.srcLow && t.srcLow) {
-          t._triedLow = true;
-          audio.src = t.srcLow; audio.play().catch(() => {});
-          return;
-        }
-        /* Never a dead end: swap in the closest playable match for this track. */
-        if (!t._altTried) {
-          t._altTried = true;
-          try {
-            const data = await api("/search/songs?query=" + encodeURIComponent(t.title + " " + t.artist) + "&page=0&limit=5", 9000);
-            const alt = normSongs(data.results || []).find((s) => s.id !== t.id);
-            if (alt) {
-              S.queue[S.idx] = alt;
-              toast("Closest playable match — " + alt.title);
-              loadTrack(true); refreshQueueUI();
-              return;
-            }
-          } catch (e) {}
-        }
-        S.loading = false; S.playing = false; syncTransport();
-        toast("Stream failed — moving to the next track");
-        setTimeout(() => next(false), 600);
-      });
+      audio.addEventListener("error", () => { /* unused for playback — YouTube owns the pipeline */ });
       audio.addEventListener("timeupdate", syncSeek);
       audio.addEventListener("loadedmetadata", syncSeek);
 
@@ -2278,6 +2172,7 @@
       wire("#npFav", () => current() && toggleFav(current()));
       wire("#btnEqOpen", () => showView("eq")); wire("#npEq", () => { closeNP(); showView("eq"); });
       wire("#btnQueueOpen", () => showView("queue"));
+      wire("#btnFullscreen", toggleFullscreen); wire("#fsChip", toggleFullscreen);
       wire("#npQueueBtn", () => { closeNP(); showView("queue"); });
       wire("#npAddQueue", () => { const t = current(); if (t) { S.queue.push(t); refreshQueueUI(); toast("Added to queue — " + t.title); } });
       $("#pbArt").addEventListener("click", openNP);
@@ -2344,7 +2239,7 @@
       $("#btnShuffle").innerHTML = ICONS.shuffle; $("#npShuffle").innerHTML = ICONS.shuffle;
       $("#btnPrev").innerHTML = ICONS.prev; $("#npPrev").innerHTML = ICONS.prev;
       $("#btnNext").innerHTML = ICONS.next; $("#npNext").innerHTML = ICONS.next;
-      $("#btnEqOpen").innerHTML = ICONS.sliders; $("#btnQueueOpen").innerHTML = ICONS.queue;
+      $("#btnEqOpen").innerHTML = ICONS.sliders; $("#btnQueueOpen").innerHTML = ICONS.queue; $("#btnFullscreen").innerHTML = ICONS.expand;
       $("#pbFav").innerHTML = ICONS.heart; $("#npFav").innerHTML = ICONS.heart;
       syncTransport();
 
@@ -2390,6 +2285,48 @@
         else if (e.code === "ArrowLeft") engSeek(Math.max(0, engPos() - 10));
         else if (e.code === "Escape") closeNP();
       });
+
+      /* ============================== fullscreen ==============================
+         Immersive mode: a prominent toggle in the top bar and the player bar.
+         Entering or leaving fullscreen never touches the YouTube player, so
+         playback continues uninterrupted — no reload, no restart. On phones
+         we also try once, on the first user tap, and silently respect a
+         browser refusal (autoplay/fullscreen policies stay the browser's). */
+      function isFs() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+      function syncFsUI() {
+        const ic = isFs() ? ICONS.compress : ICONS.expand;
+        const b = $("#btnFullscreen"); if (b) b.innerHTML = ic;
+        const chip = $("#fsChip");
+        if (chip) {
+          const s = chip.querySelector("[data-icon]"); if (s) s.innerHTML = ic;
+          const l = chip.querySelector(".lbl"); if (l) l.textContent = isFs() ? "Exit Full" : "Fullscreen";
+        }
+      }
+      function enterFs() {
+        const el = document.documentElement;
+        const req = el.requestFullscreen || el.webkitRequestFullscreen;
+        if (!req) return;
+        try {
+          const p = req.call(el, { navigationUI: "hide" });
+          if (p && p.catch) p.catch(() => { try { req.call(el); } catch (e) {} });
+        } catch (e) { try { req.call(el); } catch (e2) {} }
+      }
+      function toggleFullscreen() {
+        if (isFs()) {
+          const ex = document.exitFullscreen || document.webkitExitFullscreen;
+          if (ex) { try { ex.call(document); } catch (e) {} }
+        } else enterFs();
+      }
+      document.addEventListener("fullscreenchange", syncFsUI);
+      document.addEventListener("webkitfullscreenchange", syncFsUI);
+      let autoFsTried = false;
+      document.addEventListener("pointerdown", () => {
+        if (autoFsTried) return;
+        autoFsTried = true;
+        if (isFs()) return;
+        const small = window.matchMedia && matchMedia("(max-width: 860px)").matches;
+        if (small) enterFs();
+      }, { passive: true });
 
       /* ============================== THEME SYSTEM ==============================
          Four inspired worlds. Each theme is a full token set on <html data-theme>:
